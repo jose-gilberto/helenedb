@@ -1,2 +1,2 @@
-const x = 123;
-console.log(x)
+const x = `"1233"`;
+console.log(x);
