@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/jose-gilberto/helenedb#readme",
   "devDependencies": {
+    "@types/jest": "^26.0.3",
     "@typescript-eslint/eslint-plugin": "^3.4.0",
     "@typescript-eslint/parser": "^3.4.0",
     "eslint": "^7.3.1",
@@ -29,6 +30,7 @@
     "jest": "^26.1.0",
     "lint-staged": "^10.2.11",
     "prettier": "^2.0.5",
+    "ts-jest": "^26.1.1",
     "typescript": "^3.9.5"
   }
 }
