@@ -9,13 +9,7 @@ export default class Lexer {
     TokenType.SCHEMA,
   ];
 
-  private readonly DATATYPES = [
-    'INTEGER',
-    'FLOAT',
-    'BOOLEAN',
-    'DATE',
-    'VARCHAR',
-  ];
+  private readonly DATATYPES = [TokenType.INTEGER];
 
   private tokens: Token[];
   private programCounter: number;
@@ -64,9 +58,10 @@ export default class Lexer {
           }
 
           // Support Data Types
-          // if (this.DATATYPES.includes(lexem.toUpperCase())) {
-
-          // }
+          if (this.DATATYPES.includes(lexem.toUpperCase() as TokenType)) {
+            const tType = lexem.toUpperCase() as TokenType;
+            return new Token(tType, '');
+          }
 
           // TODO: implements token to receive lexem and addr
           return new Token(

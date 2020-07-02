@@ -8,6 +8,9 @@ enum TokenType {
   // DATE_LITERAL = 'DATE_LITERAL',
   // BOOL_LITERAL = 'BOOL_LITERAL',
 
+  // DataTypes
+  INTEGER = 'INTEGER',
+
   // Separators
   // LPAR = '(',
   // RPAR = ')',
