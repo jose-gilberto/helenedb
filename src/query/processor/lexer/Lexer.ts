@@ -3,13 +3,13 @@ import Token from './token/Token';
 import SymbolTable from '../symbol-table/SymbolTable';
 
 export default class Lexer {
-  private readonly KEYWORDS: TokenType[] = [
+  public static readonly KEYWORDS: TokenType[] = [
     TokenType.AUTHORIZATION,
     TokenType.CREATE,
     TokenType.SCHEMA,
   ];
 
-  private readonly DATATYPES = [TokenType.INTEGER];
+  public static readonly DATATYPES = [TokenType.INTEGER];
 
   private tokens: Token[];
   private programCounter: number;
@@ -51,14 +51,14 @@ export default class Lexer {
             continue;
           }
         case 1:
-          if (this.KEYWORDS.includes(lexem.toUpperCase() as TokenType)) {
+          if (Lexer.KEYWORDS.includes(lexem.toUpperCase() as TokenType)) {
             // TODO: implements token line and col
             const tType = lexem.toUpperCase() as TokenType;
             return new Token(tType, '');
           }
 
           // Support Data Types
-          if (this.DATATYPES.includes(lexem.toUpperCase() as TokenType)) {
+          if (Lexer.DATATYPES.includes(lexem.toUpperCase() as TokenType)) {
             const tType = lexem.toUpperCase() as TokenType;
             return new Token(tType, '');
           }

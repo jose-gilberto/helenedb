@@ -2,6 +2,7 @@
 
 import Lexer from './query/processor/lexer/Lexer';
 import SymbolTable from './query/processor/symbol-table/SymbolTable';
+import TokenType from './query/processor/lexer/token/TokenType';
 
 const program = `
 CREATE SCHEMA public AUTHORIZATION user;
