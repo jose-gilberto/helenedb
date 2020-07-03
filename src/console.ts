@@ -1,3 +1,4 @@
 import ConsoleInterpreter from './util/ConsoleInterpreter';
 
-ConsoleInterpreter.start();
+const console = new ConsoleInterpreter();
+console.start();
