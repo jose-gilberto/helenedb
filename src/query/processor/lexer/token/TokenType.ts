@@ -24,10 +24,10 @@ enum TokenType {
   // RKEY = '}',
 
   // Operators
-  // ADD = '+',
-  // MINUS = '-',
-  // DIV = '/',
-  // MULT = '*'
+  PLUS = '+',
+  MINUS = '-',
+  DIV = '/',
+  MULT = '*',
 
   // Relational Operators
   EQ = '=',

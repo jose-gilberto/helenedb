@@ -173,9 +173,36 @@ export default class Lexer {
     throw new Error('Stack overflow');
   }
 
-  // public operatorsAutomata(sourceCode: string): Token {
-  //   throw new Error('Unsurported operation')
-  // }
+  public operatorsAutomata(sourceCode: string): Token {
+    // + * - /
+    const state = 0;
+    while (this.programCounter < sourceCode.length) {
+      const currChar = sourceCode[this.programCounter];
+      switch (state) {
+        case 0:
+          if (currChar === '+') {
+            this.programCounter++;
+            this.colCounter++;
+            return new Token(TokenType.PLUS, '');
+          } else if (currChar === '-') {
+            this.programCounter++;
+            this.colCounter++;
+            return new Token(TokenType.MINUS, '');
+          } else if (currChar === '/') {
+            this.programCounter++;
+            this.colCounter++;
+            return new Token(TokenType.DIV, '');
+          } else if (currChar === '*') {
+            this.programCounter++;
+            this.colCounter++;
+            return new Token(TokenType.MULT, '');
+          } else {
+            throw new Error('Lexical Error');
+          }
+      }
+    }
+    throw new Error('Stack overflow');
+  }
 
   public relopAutomata(sourceCode: string): Token {
     // < <= >= = != <>
