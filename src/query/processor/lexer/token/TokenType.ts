@@ -16,10 +16,10 @@ enum TokenType {
   BOOL = 'BOOL',
 
   // Separators
-  // LPAR = '(',
-  // RPAR = ')',
-  // LBRC = '[',
-  // RBRC = ']',
+  LPAR = '(',
+  RPAR = ')',
+  LBRC = '[',
+  RBRC = ']',
   // LKEY = '{',
   // RKEY = '}',
 

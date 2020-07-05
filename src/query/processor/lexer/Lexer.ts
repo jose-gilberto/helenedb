@@ -142,9 +142,36 @@ export default class Lexer {
     throw new Error('Stack overflow');
   }
 
-  // public separatorsAutomata(sourceCode: string): Token {
-  //   throw new Error('Unsurported operation')
-  // }
+  public separatorsAutomata(sourceCode: string): Token {
+    // [ ] ( )
+    const state = 0;
+    while (this.programCounter < sourceCode.length) {
+      const currChar = sourceCode[this.programCounter];
+      switch (state) {
+        case 0:
+          if (currChar == '(') {
+            this.programCounter++;
+            this.colCounter++;
+            return new Token(TokenType.LPAR, '');
+          } else if (currChar == ')') {
+            this.programCounter++;
+            this.colCounter++;
+            return new Token(TokenType.RPAR, '');
+          } else if (currChar == '[') {
+            this.programCounter++;
+            this.colCounter++;
+            return new Token(TokenType.LBRC, '');
+          } else if (currChar == ']') {
+            this.programCounter++;
+            this.colCounter++;
+            return new Token(TokenType.RBRC, '');
+          } else {
+            throw new Error('Lexical Error');
+          }
+      }
+    }
+    throw new Error('Stack overflow');
+  }
 
   // public operatorsAutomata(sourceCode: string): Token {
   //   throw new Error('Unsurported operation')
