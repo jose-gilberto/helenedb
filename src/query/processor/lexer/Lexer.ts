@@ -60,8 +60,8 @@ export default class Lexer {
 
   private tokens: Token[];
   private programCounter: number;
-  private lineCounter: number;
-  private colCounter: number;
+  private lineCounter: number; // TODO: add suport
+  private colCounter: number; // TODO: add suport
   private symbolTable: SymbolTable;
 
   constructor(symbolTable: SymbolTable) {
@@ -72,9 +72,56 @@ export default class Lexer {
     this.colCounter = 0;
   }
 
-  // public numberAutomata(sourceCode: string): Token {
-  //   throw new Error('Unsurported operation')
-  // }
+  public numberAutomata(sourceCode: string): Token {
+    let state = 0,
+      lexem = '';
+    while (this.programCounter < sourceCode.length) {
+      const currChar = sourceCode[this.programCounter];
+      switch (state) {
+        case 0:
+          if (currChar.match(/[0-9]/)) {
+            state = 1;
+            this.programCounter++;
+            this.colCounter++;
+            lexem += currChar;
+            continue;
+          } else {
+            throw new Error('Lexical Error');
+          }
+        case 1:
+          if (currChar === '.') {
+            state = 2;
+            this.programCounter++;
+            this.colCounter++;
+            lexem += currChar;
+            continue;
+          } else if (currChar === undefined || !currChar.match(/[0-9]/)) {
+            state = 3;
+            continue;
+          } else {
+            state = 1;
+            this.programCounter++;
+            this.colCounter++;
+            lexem += currChar;
+            continue;
+          }
+        case 2:
+          if (currChar === undefined || !currChar.match(/[0-9]/)) {
+            state = 3;
+            continue;
+          } else {
+            state = 2;
+            this.programCounter++;
+            this.colCounter++;
+            lexem += currChar;
+            continue;
+          }
+        case 3:
+          return new Token(TokenType.NUMBER_LITERAL, Number(lexem));
+      }
+    }
+    throw new Error('Stack overflow');
+  }
 
   public textDateAutomata(sourceCode: string): Token {
     let state = 0,
@@ -327,24 +374,22 @@ export default class Lexer {
       } else if (currChar.match(/[.,;]/)) {
         // symbols like: . ,
         this.tokens.push(this.symbolsAutomata(sourceCode));
-      }
-      // else if (currChar.match(/[0-9]/)) {
-      //   // numbers
-      //   this.tokens.push(this.numberAutomata(sourceCode))
-      // } else if (currChar.match(/[()]/)) {
-      //   // separators like: ( )
-      //   this.tokens.push(this.separatorsAutomata(sourceCode))
-      // } else if (currChar.match(/[+-/*]/)) {
-      //   // operators like: + - / *
-      //   this.tokens.push(this.operatorsAutomata(sourceCode))
-      // } else if (currChar == '\'') {
-      //   // text or data
-      //   this.tokens.push(this.textDateAutomata(sourceCode))
-      // } else if (currChar.match(/[=><!]/)) {
-      //   // relational operators
-      //   this.tokens.push(this.relopAutomata(sourceCode))
-      // }
-      else {
+      } else if (currChar.match(/[0-9]/)) {
+        // numbers
+        this.tokens.push(this.numberAutomata(sourceCode));
+      } else if (currChar.match(/[()]/)) {
+        // separators like: ( )
+        this.tokens.push(this.separatorsAutomata(sourceCode));
+      } else if (currChar.match(/[+-/*]/)) {
+        // operators like: + - / *
+        this.tokens.push(this.operatorsAutomata(sourceCode));
+      } else if (currChar == "'") {
+        // text or data
+        this.tokens.push(this.textDateAutomata(sourceCode));
+      } else if (currChar.match(/[=><!]/)) {
+        // relational operators
+        this.tokens.push(this.relopAutomata(sourceCode));
+      } else {
         throw Error('Lexical Error');
       }
     }

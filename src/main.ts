@@ -5,7 +5,7 @@ import SymbolTable from './query/processor/symbol-table/SymbolTable';
 import TokenType from './query/processor/lexer/token/TokenType';
 
 const program = `
-CREATE SCHEMA public AUTHORIZATION user;
+CREATE SCHEMA public AUTHORIZATION user; 22.6 33 ( 22.3 ) + 3 - 4 *
 `;
 
 const sb = new SymbolTable();
