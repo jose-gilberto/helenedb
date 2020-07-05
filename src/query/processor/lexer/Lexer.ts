@@ -4,12 +4,59 @@ import SymbolTable from '../symbol-table/SymbolTable';
 
 export default class Lexer {
   public static readonly KEYWORDS: TokenType[] = [
+    TokenType.ADD,
+    TokenType.ALL,
+    TokenType.ALTER,
+    TokenType.AND,
+    TokenType.AS,
+    TokenType.ASC,
     TokenType.AUTHORIZATION,
+    TokenType.BETWEEN,
+    TokenType.BY,
+    TokenType.COLUMN,
+    TokenType.CONSTRAINT,
     TokenType.CREATE,
+    TokenType.DELETE,
+    TokenType.DESC,
+    TokenType.DISTINCT,
+    TokenType.DROP,
+    TokenType.EXISTS,
+    TokenType.EXPLAIN,
+    TokenType.FOREIGN,
+    TokenType.FROM,
+    TokenType.GROUP,
+    TokenType.HAVING,
+    TokenType.IN,
+    TokenType.INCLUDE,
+    TokenType.INDEX,
+    TokenType.INSERT,
+    TokenType.INTO,
+    TokenType.KEY,
+    TokenType.LIKE,
+    TokenType.LIMIT,
+    TokenType.NOT,
+    TokenType.NULL,
+    TokenType.ON,
+    TokenType.OR,
+    TokenType.ORDER,
+    TokenType.PRIMARY,
+    TokenType.SELECT,
+    TokenType.SET,
+    TokenType.TABLE,
+    TokenType.UPDATE,
     TokenType.SCHEMA,
+    TokenType.VALUES,
+    TokenType.VIEW,
+    TokenType.WHERE,
   ];
 
-  public static readonly DATATYPES = [TokenType.INTEGER];
+  public static readonly DATATYPES = [
+    TokenType.INTEGER,
+    TokenType.BOOL,
+    TokenType.DATE,
+    TokenType.FLOAT,
+    TokenType.TEXT,
+  ];
 
   private tokens: Token[];
   private programCounter: number;
@@ -66,7 +113,7 @@ export default class Lexer {
           // TODO: implements token to receive lexem and addr
           return new Token(
             TokenType.IDENTIFIER,
-            `${lexem};${this.symbolTable.lexerEntry(lexem)}`
+            `${this.symbolTable.lexerEntry(lexem)}-${lexem}`
           );
       }
     }
@@ -103,9 +150,66 @@ export default class Lexer {
   //   throw new Error('Unsurported operation')
   // }
 
-  // public relopAutomata(sourceCode: string): Token {
-  //   throw new Error('Unsurported operation')
-  // }
+  public relopAutomata(sourceCode: string): Token {
+    // < <= >= = != <>
+    let state = 0;
+    while (this.programCounter < sourceCode.length) {
+      const currChar = sourceCode[this.programCounter];
+      switch (state) {
+        case 0:
+          if (currChar === '=') {
+            state = 1;
+            this.programCounter++;
+            this.colCounter++;
+            continue;
+          } else if (currChar === '<') {
+            state = 2;
+            this.programCounter++;
+            this.colCounter++;
+            continue;
+          } else if (currChar === '>') {
+            state = 3;
+            this.programCounter++;
+            this.colCounter++;
+            continue;
+          } else if (currChar === '!') {
+            state = 4;
+            this.programCounter++;
+            this.colCounter++;
+            continue;
+          } else {
+            throw new Error('Lexical Error');
+          }
+        case 1:
+          return new Token(TokenType.EQ, '');
+        case 2:
+          if (currChar === '=') {
+            this.programCounter++;
+            this.colCounter++;
+            return new Token(TokenType.LEQ, '');
+          } else {
+            return new Token(TokenType.LESS, '');
+          }
+        case 3:
+          if (currChar === '=') {
+            this.programCounter++;
+            this.colCounter++;
+            return new Token(TokenType.GEQ, '');
+          } else {
+            return new Token(TokenType.GRT, '');
+          }
+        case 4:
+          if (currChar === '=') {
+            this.programCounter++;
+            this.colCounter++;
+            return new Token(TokenType.DIFF, '');
+          } else {
+            throw new Error('Lexical Error');
+          }
+      }
+    }
+    throw new Error('Stack overflow');
+  }
 
   public start(sourceCode: string): Token[] {
     this.scanner(sourceCode);
