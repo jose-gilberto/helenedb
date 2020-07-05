@@ -76,9 +76,45 @@ export default class Lexer {
   //   throw new Error('Unsurported operation')
   // }
 
-  // public textDateAutomata(sourceCode: string): Token {
-  //   throw new Error('Unsurported operation')
-  // }
+  public textDateAutomata(sourceCode: string): Token {
+    let state = 0,
+      lexem = '';
+    while (this.programCounter < sourceCode.length) {
+      const currChar = sourceCode[this.programCounter];
+      switch (state) {
+        case 0:
+          if (currChar === "'") {
+            state = 1;
+            this.programCounter++;
+            this.colCounter++;
+            continue;
+          } else {
+            throw new Error('Lexical Error');
+          }
+        case 1:
+          if (currChar === "'") {
+            state = 2;
+            this.programCounter++;
+            this.colCounter++;
+            continue;
+          } else {
+            state = 1;
+            this.programCounter++;
+            this.colCounter++;
+            lexem += currChar;
+            continue;
+          }
+        case 2:
+          if (
+            lexem.match(/^\d{4}-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01])$/)
+          ) {
+            return new Token(TokenType.DATE, lexem);
+          }
+          return new Token(TokenType.TEXT_LITERAL, lexem);
+      }
+    }
+    throw new Error('Unsurported operation');
+  }
 
   public identifierAutomata(sourceCode: string): Token {
     let state = 0,
