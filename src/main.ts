@@ -3,9 +3,10 @@
 import Lexer from './query/processor/lexer/Lexer';
 import SymbolTable from './query/processor/symbol-table/SymbolTable';
 import TokenType from './query/processor/lexer/token/TokenType';
+import Parser from './query/processor/parser/Parser';
 
 const program = `
-CREATE SCHEMA public AUTHORIZATION user; 22.6 33 ( 22.3 ) + 3 - 4 *
+CREATE SCHEMA public AUTHORIZATION user;
 `;
 
 const sb = new SymbolTable();
@@ -13,3 +14,5 @@ const lexer = new Lexer(sb);
 const tokens = lexer.start(program);
 
 console.log(tokens);
+
+const parser = new Parser(tokens, sb);

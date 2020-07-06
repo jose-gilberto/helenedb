@@ -29,7 +29,7 @@ export default class LexerStream {
 
     const token = this.tokens[this.p];
 
-    if (!Lexer.KEYWORDS.includes(token.getType()) || kw == token.getType()) {
+    if (!Lexer.KEYWORDS.includes(token.getType()) || kw !== token.getType()) {
       throw new Error('Bad Syntax');
     }
 
@@ -69,7 +69,19 @@ export default class LexerStream {
     return [addr, Number(pos)];
   }
 
-  // public consumeSymbol(s: string): void {}
+  public consumeSymbol(s: string): void {
+    if (this.p > this.tokens.length) {
+      throw new Error('Bad Syntax');
+    }
+
+    const token = this.tokens[this.p];
+
+    if (token.getType() !== s) {
+      throw new Error('Bad Syntax');
+    }
+
+    this.p++;
+  }
 
   public consumeText(): string {
     if (this.p > this.tokens.length) {
