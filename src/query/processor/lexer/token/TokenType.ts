@@ -39,6 +39,8 @@ enum TokenType {
 
   // Symbols
   SEMICOLON = ';',
+  DOT = '.',
+  COMMA = ',',
 
   // Keywords
   ADD = 'ADD',

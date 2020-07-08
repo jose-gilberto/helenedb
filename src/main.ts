@@ -6,13 +6,14 @@ import TokenType from './query/processor/lexer/token/TokenType';
 import Parser from './query/processor/parser/Parser';
 
 const program = `
-CREATE SCHEMA public AUTHORIZATION user;
+SELECT user.id, user.name FROM user;
 `;
 
 const sb = new SymbolTable();
-const lexer = new Lexer(sb);
+const lexer = new Lexer();
 const tokens = lexer.start(program);
 
 console.log(tokens);
 
 const parser = new Parser(tokens, sb);
+console.log(sb);

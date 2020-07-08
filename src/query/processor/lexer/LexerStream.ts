@@ -51,7 +51,7 @@ export default class LexerStream {
     return Number(token.getValue());
   }
 
-  public consumeIdentifier(): [string, number] {
+  public consumeIdentifier(): string {
     if (this.p > this.tokens.length) {
       throw new Error('Bad Syntax');
     }
@@ -65,8 +65,7 @@ export default class LexerStream {
     this.p++;
     // 0-identifier
     // [pos]-[address]
-    const [pos, addr] = token.getValue().toString().split('-');
-    return [addr, Number(pos)];
+    return token.getValue().toString();
   }
 
   public consumeSymbol(s: string): void {
