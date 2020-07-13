@@ -97,13 +97,10 @@ export default class Parser {
         type: 'column',
       };
 
-      // let columnAddr = this.symbolTable.add(columnEntry)
+      const columnAddr = this.symbolTable.add(columnEntry);
 
       // addr like id-number
-      fieldList.push({
-        table: table,
-        column: column,
-      });
+      fieldList.push(columnAddr);
 
       if (this.tokenStream.getToken().getType() !== TokenType.COMMA) break;
       else {
@@ -126,10 +123,10 @@ export default class Parser {
         },
         type: 'table',
       };
-      this.symbolTable.add(tableEntry);
+      const tableAddr = this.symbolTable.add(tableEntry);
 
       // addr like id-number
-      tableList.push(table);
+      tableList.push(tableAddr);
 
       if (this.tokenStream.getToken().getType() !== TokenType.COMMA) break;
       else {
@@ -137,7 +134,40 @@ export default class Parser {
       }
     }
 
+    // <where-stmt> -> EPSILON | WHERE <predicate>
+    // <predicate> -> <term-nd> <term-or>
+    // <term-or> -> EPSILON | OR <term-nd> <term-or>
+    // <term-nd> -> <expr> <term-n>
+    // <term-n> -> AND <expr> <term-n> | EPSILON
+    // <expr> -> <term> <relop> <term>
+    // <term> -> <constant> | <field>
+    if (this.tokenStream.getToken().getType() === TokenType.WHERE) {
+      // WHERE clause
+      // consume WHERE
+      this.tokenStream.consumeKeyword(TokenType.WHERE);
+
+      const predicate = [];
+      const term = [];
+
+      if (this.tokenStream.getToken().getType() === TokenType.DATE_LITERAL) {
+        this.tokenStream.consumeDate();
+      } else if (
+        this.tokenStream.getToken().getType() === TokenType.TEXT_LITERAL
+      ) {
+        this.tokenStream.consumeText();
+      } else if (
+        this.tokenStream.getToken().getType() === TokenType.NUMBER_LITERAL
+      ) {
+        this.tokenStream.consumeNumber();
+      } else {
+        this.tokenStream.consumeIdentifier();
+      }
+
+      // WHERE camp = 12 AND x = y OR s = 3
+    }
+
     this.tokenStream.consumeSymbol(TokenType.SEMICOLON);
+
     console.log(fieldList);
     console.log(tableList);
   }

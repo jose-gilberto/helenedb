@@ -89,13 +89,26 @@ export default class LexerStream {
 
     const token = this.tokens[this.p];
 
-    // if (token.getType() !== TokenType.TEXT) {
-    // throe new Error('Bad Syntax')
-    // }
+    if (token.getType() !== TokenType.TEXT_LITERAL) {
+      throw new Error('Bad Syntax');
+    }
 
     this.p++;
     return token.getValue().toString();
   }
 
-  // public consumeDate() {}
+  public consumeDate(): string {
+    if (this.p > this.tokens.length) {
+      throw new Error('Bad Syntax');
+    }
+
+    const token = this.tokens[this.p];
+
+    if (token.getType() !== TokenType.DATE_LITERAL) {
+      throw new Error('Bad Syntax');
+    }
+
+    this.p++;
+    return token.getValue().toString();
+  }
 }
