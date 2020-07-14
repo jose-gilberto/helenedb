@@ -147,23 +147,182 @@ export default class Parser {
       this.tokenStream.consumeKeyword(TokenType.WHERE);
 
       const predicate = [];
-      const term = [];
+      let expr = [];
 
+      // TODO: create consumeTerm function on lexer stream
       if (this.tokenStream.getToken().getType() === TokenType.DATE_LITERAL) {
-        this.tokenStream.consumeDate();
+        expr.push(this.tokenStream.consumeDate());
       } else if (
         this.tokenStream.getToken().getType() === TokenType.TEXT_LITERAL
       ) {
-        this.tokenStream.consumeText();
+        expr.push(expr.push(this.tokenStream.consumeText()));
       } else if (
         this.tokenStream.getToken().getType() === TokenType.NUMBER_LITERAL
       ) {
-        this.tokenStream.consumeNumber();
+        expr.push(this.tokenStream.consumeNumber());
       } else {
-        this.tokenStream.consumeIdentifier();
+        const table = this.tokenStream.consumeIdentifier();
+        const tableEntry: SymbolTableEntry = {
+          name: table,
+          scope: {
+            type: 0,
+            parent: -1,
+          },
+          type: 'table',
+        };
+        const tableAddr = this.symbolTable.add(tableEntry);
+
+        this.tokenStream.consumeSymbol(TokenType.DOT);
+
+        const column = this.tokenStream.consumeIdentifier();
+        const columnEntry: SymbolTableEntry = {
+          name: column,
+          scope: {
+            type: 1,
+            parent: tableAddr,
+          },
+          type: 'column',
+        };
+        const columnAddr = this.symbolTable.add(columnEntry);
+
+        expr.push(columnAddr);
       }
 
+      const relop = this.tokenStream.consumeRelop();
+      expr.push(relop);
+
+      if (this.tokenStream.getToken().getType() === TokenType.DATE_LITERAL) {
+        expr.push(this.tokenStream.consumeDate());
+      } else if (
+        this.tokenStream.getToken().getType() === TokenType.TEXT_LITERAL
+      ) {
+        expr.push(this.tokenStream.consumeText());
+      } else if (
+        this.tokenStream.getToken().getType() === TokenType.NUMBER_LITERAL
+      ) {
+        expr.push(this.tokenStream.consumeNumber());
+      } else {
+        const table = this.tokenStream.consumeIdentifier();
+        const tableEntry: SymbolTableEntry = {
+          name: table,
+          scope: {
+            type: 0,
+            parent: -1,
+          },
+          type: 'table',
+        };
+        const tableAddr = this.symbolTable.add(tableEntry);
+
+        this.tokenStream.consumeSymbol(TokenType.DOT);
+
+        const column = this.tokenStream.consumeIdentifier();
+        const columnEntry: SymbolTableEntry = {
+          name: column,
+          scope: {
+            type: 1,
+            parent: tableAddr,
+          },
+          type: 'column',
+        };
+        const columnAddr = this.symbolTable.add(columnEntry);
+
+        expr.push(columnAddr);
+      }
+
+      predicate.push(expr);
+
       // WHERE camp = 12 AND x = y OR s = 3
+
+      while (
+        this.tokenStream.getToken().getType() === TokenType.AND ||
+        this.tokenStream.getToken().getType() === TokenType.OR
+      ) {
+        predicate.push(this.tokenStream.consumeAndOr());
+        expr = [];
+
+        if (this.tokenStream.getToken().getType() === TokenType.DATE_LITERAL) {
+          expr.push(this.tokenStream.consumeDate());
+        } else if (
+          this.tokenStream.getToken().getType() === TokenType.TEXT_LITERAL
+        ) {
+          expr.push(this.tokenStream.consumeText());
+        } else if (
+          this.tokenStream.getToken().getType() === TokenType.NUMBER_LITERAL
+        ) {
+          expr.push(this.tokenStream.consumeNumber());
+        } else {
+          const table = this.tokenStream.consumeIdentifier();
+          const tableEntry: SymbolTableEntry = {
+            name: table,
+            scope: {
+              type: 0,
+              parent: -1,
+            },
+            type: 'table',
+          };
+          const tableAddr = this.symbolTable.add(tableEntry);
+
+          this.tokenStream.consumeSymbol(TokenType.DOT);
+
+          const column = this.tokenStream.consumeIdentifier();
+          const columnEntry: SymbolTableEntry = {
+            name: column,
+            scope: {
+              type: 1,
+              parent: tableAddr,
+            },
+            type: 'column',
+          };
+          const columnAddr = this.symbolTable.add(columnEntry);
+
+          expr.push(columnAddr);
+        }
+
+        const relop = this.tokenStream.consumeRelop();
+        expr.push(relop);
+
+        if (this.tokenStream.getToken().getType() === TokenType.DATE_LITERAL) {
+          expr.push(this.tokenStream.consumeDate());
+        } else if (
+          this.tokenStream.getToken().getType() === TokenType.TEXT_LITERAL
+        ) {
+          expr.push(this.tokenStream.consumeText());
+        } else if (
+          this.tokenStream.getToken().getType() === TokenType.NUMBER_LITERAL
+        ) {
+          expr.push(this.tokenStream.consumeNumber());
+        } else {
+          const table = this.tokenStream.consumeIdentifier();
+          const tableEntry: SymbolTableEntry = {
+            name: table,
+            scope: {
+              type: 0,
+              parent: -1,
+            },
+            type: 'table',
+          };
+          const tableAddr = this.symbolTable.add(tableEntry);
+
+          this.tokenStream.consumeSymbol(TokenType.DOT);
+
+          const column = this.tokenStream.consumeIdentifier();
+          const columnEntry: SymbolTableEntry = {
+            name: column,
+            scope: {
+              type: 1,
+              parent: tableAddr,
+            },
+            type: 'column',
+          };
+          const columnAddr = this.symbolTable.add(columnEntry);
+
+          expr.push(columnAddr);
+        }
+
+        predicate.push(expr);
+      }
+
+      console.log(predicate);
     }
 
     this.tokenStream.consumeSymbol(TokenType.SEMICOLON);

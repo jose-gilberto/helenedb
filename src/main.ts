@@ -6,7 +6,7 @@ import TokenType from './query/processor/lexer/token/TokenType';
 import Parser from './query/processor/parser/Parser';
 
 const program = `
-SELECT user.id, user.name FROM user;
+SELECT user.id, user.name FROM user WHERE user.id = 1 AND user.name LIKE 'Jose%';
 `;
 
 const sb = new SymbolTable();
