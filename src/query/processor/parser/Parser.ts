@@ -3,6 +3,7 @@ import LexerStream from '../lexer/LexerStream';
 import Token from '../lexer/token/Token';
 import TokenType from '../lexer/token/TokenType';
 import SymbolTableEntry from '../symbol-table/SymbolTableEntry.interface';
+import QueryAlgebra from './algebra/QueryAlgebra';
 
 export default class Parser {
   private actions: Array<string>;
@@ -141,25 +142,35 @@ export default class Parser {
     // <term-n> -> AND <expr> <term-n> | EPSILON
     // <expr> -> <term> <relop> <term>
     // <term> -> <constant> | <field>
+    const predicate = new Array<any>();
+
     if (this.tokenStream.getToken().getType() === TokenType.WHERE) {
       // WHERE clause
       // consume WHERE
       this.tokenStream.consumeKeyword(TokenType.WHERE);
 
-      const predicate = [];
       let expr = [];
 
       // TODO: create consumeTerm function on lexer stream
       if (this.tokenStream.getToken().getType() === TokenType.DATE_LITERAL) {
-        expr.push(this.tokenStream.consumeDate());
+        expr.push({
+          type: TokenType.DATE_LITERAL,
+          value: this.tokenStream.consumeDate(),
+        });
       } else if (
         this.tokenStream.getToken().getType() === TokenType.TEXT_LITERAL
       ) {
-        expr.push(expr.push(this.tokenStream.consumeText()));
+        expr.push({
+          type: TokenType.TEXT_LITERAL,
+          value: this.tokenStream.consumeText(),
+        });
       } else if (
         this.tokenStream.getToken().getType() === TokenType.NUMBER_LITERAL
       ) {
-        expr.push(this.tokenStream.consumeNumber());
+        expr.push({
+          type: TokenType.NUMBER_LITERAL,
+          value: this.tokenStream.consumeNumber(),
+        });
       } else {
         const table = this.tokenStream.consumeIdentifier();
         const tableEntry: SymbolTableEntry = {
@@ -185,22 +196,34 @@ export default class Parser {
         };
         const columnAddr = this.symbolTable.add(columnEntry);
 
-        expr.push(columnAddr);
+        expr.push({
+          type: TokenType.IDENTIFIER,
+          value: columnAddr,
+        });
       }
 
       const relop = this.tokenStream.consumeRelop();
       expr.push(relop);
 
       if (this.tokenStream.getToken().getType() === TokenType.DATE_LITERAL) {
-        expr.push(this.tokenStream.consumeDate());
+        expr.push({
+          type: TokenType.DATE_LITERAL,
+          value: this.tokenStream.consumeDate(),
+        });
       } else if (
         this.tokenStream.getToken().getType() === TokenType.TEXT_LITERAL
       ) {
-        expr.push(this.tokenStream.consumeText());
+        expr.push({
+          type: TokenType.TEXT_LITERAL,
+          value: this.tokenStream.consumeText(),
+        });
       } else if (
         this.tokenStream.getToken().getType() === TokenType.NUMBER_LITERAL
       ) {
-        expr.push(this.tokenStream.consumeNumber());
+        expr.push({
+          type: TokenType.NUMBER_LITERAL,
+          value: this.tokenStream.consumeNumber(),
+        });
       } else {
         const table = this.tokenStream.consumeIdentifier();
         const tableEntry: SymbolTableEntry = {
@@ -226,7 +249,10 @@ export default class Parser {
         };
         const columnAddr = this.symbolTable.add(columnEntry);
 
-        expr.push(columnAddr);
+        expr.push({
+          type: TokenType.IDENTIFIER,
+          value: columnAddr,
+        });
       }
 
       predicate.push(expr);
@@ -241,15 +267,24 @@ export default class Parser {
         expr = [];
 
         if (this.tokenStream.getToken().getType() === TokenType.DATE_LITERAL) {
-          expr.push(this.tokenStream.consumeDate());
+          expr.push({
+            type: TokenType.DATE_LITERAL,
+            value: this.tokenStream.consumeDate(),
+          });
         } else if (
           this.tokenStream.getToken().getType() === TokenType.TEXT_LITERAL
         ) {
-          expr.push(this.tokenStream.consumeText());
+          expr.push({
+            type: TokenType.TEXT_LITERAL,
+            value: this.tokenStream.consumeText(),
+          });
         } else if (
           this.tokenStream.getToken().getType() === TokenType.NUMBER_LITERAL
         ) {
-          expr.push(this.tokenStream.consumeNumber());
+          expr.push({
+            type: TokenType.NUMBER_LITERAL,
+            value: this.tokenStream.consumeNumber(),
+          });
         } else {
           const table = this.tokenStream.consumeIdentifier();
           const tableEntry: SymbolTableEntry = {
@@ -275,22 +310,34 @@ export default class Parser {
           };
           const columnAddr = this.symbolTable.add(columnEntry);
 
-          expr.push(columnAddr);
+          expr.push({
+            type: TokenType.IDENTIFIER,
+            value: columnAddr,
+          });
         }
 
         const relop = this.tokenStream.consumeRelop();
         expr.push(relop);
 
         if (this.tokenStream.getToken().getType() === TokenType.DATE_LITERAL) {
-          expr.push(this.tokenStream.consumeDate());
+          expr.push({
+            type: TokenType.DATE_LITERAL,
+            value: this.tokenStream.consumeDate(),
+          });
         } else if (
           this.tokenStream.getToken().getType() === TokenType.TEXT_LITERAL
         ) {
-          expr.push(this.tokenStream.consumeText());
+          expr.push({
+            type: TokenType.TEXT_LITERAL,
+            value: this.tokenStream.consumeText(),
+          });
         } else if (
           this.tokenStream.getToken().getType() === TokenType.NUMBER_LITERAL
         ) {
-          expr.push(this.tokenStream.consumeNumber());
+          expr.push({
+            type: TokenType.NUMBER_LITERAL,
+            value: this.tokenStream.consumeNumber(),
+          });
         } else {
           const table = this.tokenStream.consumeIdentifier();
           const tableEntry: SymbolTableEntry = {
@@ -316,19 +363,30 @@ export default class Parser {
           };
           const columnAddr = this.symbolTable.add(columnEntry);
 
-          expr.push(columnAddr);
+          expr.push({
+            type: TokenType.IDENTIFIER,
+            value: columnAddr,
+          });
         }
 
         predicate.push(expr);
       }
 
-      console.log(predicate);
+      // console.log(predicate);
     }
 
     this.tokenStream.consumeSymbol(TokenType.SEMICOLON);
 
-    console.log(fieldList);
-    console.log(tableList);
+    // console.log(fieldList);
+    // console.log(tableList);
+
+    const qAlgebra = new QueryAlgebra(
+      fieldList,
+      predicate,
+      [],
+      tableList,
+      this.symbolTable
+    );
   }
 
   private startParser(): void {
