@@ -1,55 +1,45 @@
 import SymbolTableEntry from './SymbolTableEntry.interface';
 
 interface IHash {
-  [key: string]: SymbolTableEntry[];
+  [key: number]: SymbolTableEntry;
 }
 
 export default class SymbolTable {
   private entries: IHash;
+  private lastAddress: number;
 
   constructor() {
     this.entries = {};
+    this.lastAddress = 0;
   }
 
-  public entryExists(entryRef: string, entry: SymbolTableEntry): boolean {
-    if (this.entries[entryRef] == undefined) {
-      // If the entry doesnt exists
-      return false;
-    }
-
-    this.entries[entryRef].forEach((e) => {
+  public entryExists(entry: SymbolTableEntry): number {
+    for (const key in this.entries) {
       if (
-        e.scope.type == entry.scope.type &&
-        e.scope.parent == entry.scope.parent &&
-        e.type == entry.type
+        this.entries[Number(key)].name == entry.name &&
+        this.entries[Number(key)].scope.type == entry.scope.type &&
+        this.entries[Number(key)].scope.parent == entry.scope.parent &&
+        this.entries[Number(key)].type == entry.type
       ) {
-        return true;
+        return Number(key);
       }
-    });
-
-    return false;
-  }
-
-  public getEntry(entryRef: string, addr: number): SymbolTableEntry {
-    return this.entries[entryRef][addr];
-  }
-
-  public lexerEntry(entryRef: string): number {
-    if (this.entries[entryRef] == undefined) {
-      this.entries[entryRef] = [];
     }
 
-    // Set the entry values to default in lexer
-    // In parser this values will change and maybe the entry
-    // realocated
-    const entry: SymbolTableEntry = {
-      type: '',
-      scope: {
-        parent: '',
-        type: 0,
-      },
-    };
-    const len = this.entries[entryRef].push(entry);
-    return len - 1;
+    return -1;
+  }
+
+  public getEntry(addr: number): SymbolTableEntry {
+    return this.entries[addr];
+  }
+
+  public add(entry: SymbolTableEntry): number {
+    if (this.entryExists(entry) !== -1) {
+      return this.entryExists(entry);
+    }
+
+    const addr = this.lastAddress + 1;
+    this.entries[addr] = entry;
+    this.lastAddress = addr;
+    return addr;
   }
 }

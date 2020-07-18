@@ -1,6 +1,5 @@
 import TokenType from './token/TokenType';
 import Token from './token/Token';
-import SymbolTable from '../symbol-table/SymbolTable';
 
 export default class Lexer {
   public static readonly KEYWORDS: TokenType[] = [
@@ -62,10 +61,8 @@ export default class Lexer {
   private programCounter: number;
   private lineCounter: number; // TODO: add suport
   private colCounter: number; // TODO: add suport
-  private symbolTable: SymbolTable;
 
-  constructor(symbolTable: SymbolTable) {
-    this.symbolTable = symbolTable;
+  constructor() {
     this.tokens = [];
     this.lineCounter = 1;
     this.programCounter = 0;
@@ -194,10 +191,7 @@ export default class Lexer {
           }
 
           // TODO: implements token to receive lexem and addr
-          return new Token(
-            TokenType.IDENTIFIER,
-            `${this.symbolTable.lexerEntry(lexem)}-${lexem}`
-          );
+          return new Token(TokenType.IDENTIFIER, lexem);
       }
     }
     throw new Error('Stack overflow');
@@ -214,12 +208,24 @@ export default class Lexer {
             this.programCounter++;
             this.colCounter++;
             continue;
+          } else if (currChar == '.') {
+            state = 2;
+            this.programCounter++;
+            this.colCounter++;
+          } else if (currChar == ',') {
+            state = 3;
+            this.programCounter++;
+            this.colCounter++;
           } else {
             throw Error('Not suported yet');
           }
           break;
         case 1:
           return new Token(TokenType.SEMICOLON, '');
+        case 2:
+          return new Token(TokenType.DOT, '');
+        case 3:
+          return new Token(TokenType.COMMA, '');
       }
     }
     throw new Error('Stack overflow');
