@@ -1,6 +1,6 @@
 export default interface AlgebraNode {
   type: string;
-  value: string[];
+  value: any[];
   left?: AlgebraNode;
   right?: AlgebraNode;
   parent?: AlgebraNode;

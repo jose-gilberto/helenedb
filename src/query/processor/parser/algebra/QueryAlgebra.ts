@@ -97,51 +97,98 @@ export default class QueryAlgebra {
     // add left (X) - add right (tbl1)
     // add left (tbl2) - add right (tbl3)
 
-    // const tree = new AlgebraTree()
-    // tree.addRoot(pListStr)
+    const tree = new AlgebraTree();
+    tree.addRoot(this.projectionList); // [ tbl.field ... ]
 
-    // tables that will be used in this query
-    const tables: {
-      [key: string]: {
-        fields: Set<string>;
-        conditions: number[];
-      };
-    } = {};
+    if (this.selectionList.length > 0) {
+      tree.addLeft(tree.getRoot(), 'sel', this.selectionList);
+      tree.moveLeft();
+      //  console.log(tree.getCurr())
+    }
 
-    this.tableList.forEach((addr) => {
-      const table = this.symbolTable.getEntry(addr);
-      tables[table.name] = {
-        fields: new Set<string>(),
-        conditions: [],
-      };
-    });
-
-    console.log(tables);
-
-    this.selectionList.forEach((expr, index) => {
-      if (typeof expr !== 'string') {
-        // [ term1 relop term2 ]
-        const terms = [expr[0], expr[2]];
-        // tables envolved
-        const tablesSelection = new Set<string>();
-
-        terms.forEach((term) => {
-          if (term.type === TokenType.IDENTIFIER) {
-            const field = this.symbolTable.getEntry(term.value);
-            const table = this.symbolTable.getEntry(field.scope.parent);
-
-            tablesSelection.add(table.name);
-          }
-        });
-        if (tablesSelection.size === 1) {
-          const tblName = tablesSelection.values().next().value;
-          tables[tblName].conditions.push(index);
-        }
-        // console.log(index, tablesSelection)
+    this.tableList.forEach((addr, i) => {
+      const tbl = this.symbolTable.getEntry(addr);
+      if (i <= this.tableList.length - 2) {
+        tree.addLeft(tree.getCurr(), 'x', []);
+        tree.moveLeft();
+        tree.addRight(tree.getCurr(), 'table', [tbl.name]);
+      } else {
+        tree.addLeft(tree.getCurr(), 'table', [tbl.name]);
       }
     });
 
-    console.log(tables);
+    while (tree.getCurr().parent !== undefined) {
+      if (tree.getCurr().type === 'x') {
+        const avaliableData = tree
+          .getCurr()
+          .left?.value.concat(tree.getCurr().right?.value);
+        if (avaliableData === undefined) {
+          throw new Error();
+        }
+        tree.getCurr().value = avaliableData;
+        tree.moveParent();
+      } else {
+        tree.moveParent();
+      }
+    }
+
+    tree.postOrder(tree.getRoot());
+
+    // tables that will be used in this query
+    // const tables: {
+    //   [key: string]: {
+    //     fields: Set<string>;
+    //     conditions: number[];
+    //   };
+    // } = {};
+
+    // this.tableList.forEach((addr) => {
+    //   const table = this.symbolTable.getEntry(addr);
+    //   tables[table.name] = {
+    //     fields: new Set<string>(),
+    //     conditions: [],
+    //   };
+    // });
+
+    // console.log(tables);
+
+    // this.selectionList.forEach((expr, index) => {
+    //   if (typeof expr !== 'string') {
+    //     // [ term1 relop term2 ]
+    //     const terms = [expr[0], expr[2]];
+    //     // tables envolved
+    //     const tablesSelection = new Set<string>();
+
+    //     terms.forEach((term) => {
+    //       if (term.type === TokenType.IDENTIFIER) {
+    //         const field = this.symbolTable.getEntry(term.value);
+    //         const table = this.symbolTable.getEntry(field.scope.parent);
+
+    //         tablesSelection.add(table.name);
+    //       }
+    //     });
+    //     if (tablesSelection.size === 1) {
+    //       const tblName = tablesSelection.values().next().value;
+    //       tables[tblName].conditions.push(index);
+    //     }
+    //     // console.log(index, tablesSelection)
+    //   }
+    // });
+
+    // let joins: { [key: string ]: any } = {}
+
+    // if (this.tableList.length > 1) {
+    //   let join: {
+    //     tables: [string, string],
+    //     condition: number[]
+    //     avaliableTables: string[]
+    //   }
+    //   for (let i = 0; i < this.tableList.length; i++) {
+    //     // tbl1 x tbl2
+    //   }
+    // }
+
+    // console.log(tables);
 
     // if (this.selectionList.length > 0)
     // tree.addLeft(tree.getRoot(), 'sel', )

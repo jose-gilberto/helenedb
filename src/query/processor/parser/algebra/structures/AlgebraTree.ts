@@ -16,7 +16,7 @@ export default class AlgebraTree {
     return this.root;
   }
 
-  public addRoot(value: string[]): AlgebraNode {
+  public addRoot(value: any[]): AlgebraNode {
     this.root = {
       type: 'proj',
       value: value,
@@ -32,7 +32,7 @@ export default class AlgebraTree {
     return this.currTree;
   }
 
-  public addLeft(curr: AlgebraNode, type: string, value: string[]): void {
+  public addLeft(curr: AlgebraNode, type: string, value: any[]): void {
     curr.left = {
       type: type,
       value: value,
@@ -40,7 +40,7 @@ export default class AlgebraTree {
     };
   }
 
-  public addRight(curr: AlgebraNode, type: string, value: string[]): void {
+  public addRight(curr: AlgebraNode, type: string, value: any[]): void {
     curr.right = {
       type: type,
       value: value,
@@ -71,6 +71,16 @@ export default class AlgebraTree {
       throw new Error('Parent doesnt have a parent');
     }
     return curr.parent;
+  }
+
+  public postOrder(node: AlgebraNode) {
+    if (node.left) {
+      this.postOrder(node.left);
+    }
+    if (node.right) {
+      this.postOrder(node.right);
+    }
+    console.log(node.type, node.value);
   }
 
   // public addAfter(parent: AlgebraNode, type: string, value: string[]) {
