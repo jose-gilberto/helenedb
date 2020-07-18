@@ -68,11 +68,9 @@ export default class QueryAlgebra {
     this.plan = [];
     this.optPlan = [];
     this.symbolTable = sb;
-
-    this.initialRepr();
   }
 
-  private initialRepr(): void {
+  public initialRepr(): AlgebraTree {
     const pList = this.projectionList.map((addr) =>
       this.symbolTable.getEntry(addr)
     );
@@ -101,7 +99,7 @@ export default class QueryAlgebra {
     tree.addRoot(this.projectionList); // [ tbl.field ... ]
 
     if (this.selectionList.length > 0) {
-      tree.addLeft(tree.getRoot(), 'sel', this.selectionList);
+      tree.addLeft(tree.getRoot(), 'σ', this.selectionList);
       tree.moveLeft();
       //  console.log(tree.getCurr())
     }
@@ -132,7 +130,9 @@ export default class QueryAlgebra {
       }
     }
 
-    tree.postOrder(tree.getRoot());
+    // tree.postOrder(tree.getRoot());
+
+    return tree;
 
     // tables that will be used in this query
     // const tables: {

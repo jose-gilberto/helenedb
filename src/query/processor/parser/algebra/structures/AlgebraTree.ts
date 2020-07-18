@@ -18,7 +18,7 @@ export default class AlgebraTree {
 
   public addRoot(value: any[]): AlgebraNode {
     this.root = {
-      type: 'proj',
+      type: 'π',
       value: value,
     };
     this.currTree = this.root;
