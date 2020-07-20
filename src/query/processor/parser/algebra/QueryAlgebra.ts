@@ -213,4 +213,122 @@ export default class QueryAlgebra {
 
     // })
   }
+
+  public optimizeTree(): void {
+    const tables: {
+      [key: string]: {
+        fields: Set<string>;
+        conditions: number[];
+      };
+    } = {};
+
+    const joins: {
+      [key: string]: {
+        type: string;
+        conditions: number[];
+        tables: string[];
+      };
+    } = {};
+
+    this.tableList.forEach((addr) => {
+      const table = this.symbolTable.getEntry(addr);
+      tables[table.name] = {
+        fields: new Set<string>(),
+        conditions: [],
+      };
+    });
+
+    for (let i = 0; i < this.tableList.length - 1; i++) {
+      if (i <= this.tableList.length - 2) {
+        if (i == this.tableList.length - 2) {
+          // last - 1
+          const tbl1 = this.symbolTable.getEntry(this.tableList[i]);
+          const tbl2 = this.symbolTable.getEntry(this.tableList[i] + 1);
+          // others
+          joins[`join${i}`] = {
+            type: 'x',
+            conditions: [],
+            tables: [tbl1.name, tbl2.name],
+          };
+        } else {
+          const tbl = this.symbolTable.getEntry(this.tableList[i]);
+          // others
+          joins[`join${i}`] = {
+            type: 'x',
+            conditions: [],
+            tables: [tbl.name, `join${i + 1}`],
+          };
+        }
+      }
+    }
+
+    const optSelections: number[] = [];
+    this.selectionList.forEach((expr, index) => {
+      if (typeof expr !== 'string') {
+        // [ term1 relop term2 ]
+        const terms = [expr[0], expr[2]];
+        // tables envolved
+        const tablesSelection = new Set<string>();
+
+        terms.forEach((term) => {
+          if (term.type === TokenType.IDENTIFIER) {
+            const field = this.symbolTable.getEntry(term.value);
+            const table = this.symbolTable.getEntry(field.scope.parent);
+
+            tablesSelection.add(table.name);
+          }
+        });
+        if (tablesSelection.size === 1) {
+          const tblName = tablesSelection.values().next().value;
+          tables[tblName].conditions.push(index);
+          optSelections.push(index);
+        } else {
+          // 2 tables - search in joins
+          Object.entries(joins).forEach(([key, value]) => {
+            const tableNames: string[] = [];
+
+            tablesSelection.forEach((el) => {
+              tableNames.push(el);
+            });
+
+            // console.log(index, tableNames[0], tableNames[1])
+            // const joinTables = [...joins[key].tables]
+
+            // joinTables.forEach((el, index) => {
+            //   if (el.match(/join[0-9]/)) {
+            //     // console.log('match', key, value)
+            //   }
+            // })
+
+            if (
+              (value.tables.includes(tableNames[0]) ||
+                value.tables.includes(tableNames[1])) &&
+              (value.tables[0].match(/join[0-9]/) ||
+                value.tables[1].match(/join[0-9]/))
+            ) {
+              // if include the 2 tables, add condition on this cartesian product
+              // switch this carteasian product to join
+              if (!optSelections.includes(index)) {
+                joins[key].conditions.push(index);
+                joins[key].type = '|x|';
+                optSelections.push(index);
+              }
+            } else if (
+              value.tables.includes(tableNames[0]) ||
+              value.tables.includes(tableNames[1])
+            ) {
+              if (!optSelections.includes(index)) {
+                joins[key].conditions.push(index);
+                joins[key].type = '|x|';
+                optSelections.push(index);
+              }
+            }
+          });
+        }
+      }
+    });
+
+    console.log(tables);
+    console.log(joins);
+  }
 }

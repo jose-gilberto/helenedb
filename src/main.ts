@@ -5,11 +5,12 @@ import SymbolTable from './query/processor/symbol-table/SymbolTable';
 import TokenType from './query/processor/lexer/token/TokenType';
 import Parser from './query/processor/parser/Parser';
 import QueryAlgebra from './query/processor/parser/algebra/QueryAlgebra';
+import Optimizer from './query/optimizer/Optmizer';
 
 const program = `
 SELECT employee.lname 
 FROM employee, works_on, project 
-WHERE employee.pname = 'Aquarius' AND project.pnumber = works_on.pno AND employee.ssn = works_on.ssn;
+WHERE employee.pname = 'Aquarius' AND project.pnumber = works_on.pno AND employee.ssn = works_on.ssn AND project.name = employee.name;
 `;
 
 const sb = new SymbolTable();
@@ -20,4 +21,11 @@ const tokens = lexer.start(program);
 
 const parser = new Parser(tokens, sb);
 
+const tree = parser.getTree();
+
+// Optimizer.optmizeQuery(tree, sb)
+// tree.postOrder(tree.getRoot())
 // console.log(sb);
+
+const qAlgebra = parser.getData();
+qAlgebra.optimizeTree();
