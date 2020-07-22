@@ -7,10 +7,16 @@ import Parser from './query/processor/parser/Parser';
 import QueryAlgebra from './query/processor/parser/algebra/QueryAlgebra';
 import Optimizer from './query/optimizer/Optmizer';
 
+// const program = `
+// SELECT employee.lname
+// FROM employee, works_on, project
+// WHERE employee.pname = 'Aquarius' AND project.pnumber = works_on.pno AND employee.ssn = works_on.ssn AND project.name = employee.name;
+// `;
+
 const program = `
-SELECT employee.lname 
-FROM employee, works_on, project 
-WHERE employee.pname = 'Aquarius' AND project.pnumber = works_on.pno AND employee.ssn = works_on.ssn AND project.name = employee.name;
+SELECT product.name
+FROM product, category
+WHERE product.id_category = category.id AND product.value > 50.00;
 `;
 
 const sb = new SymbolTable();

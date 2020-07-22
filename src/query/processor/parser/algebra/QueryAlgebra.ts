@@ -1,6 +1,8 @@
 import AlgebraTree from './structures/AlgebraTree';
 import SymbolTable from '../../symbol-table/SymbolTable';
 import TokenType from '../../lexer/token/TokenType';
+import * as util from 'util';
+import * as graphviz from 'graphviz';
 
 interface Table {
   addr: number;
@@ -328,7 +330,122 @@ export default class QueryAlgebra {
       }
     });
 
+    const selection: Array<any> = [];
+
+    this.selectionList.forEach((el, index) => {
+      if (!optSelections.includes(index)) {
+        selection.push(el);
+      }
+    });
+
+    // Field opt
+    this.projectionList.forEach((addr) => {
+      const column = this.symbolTable.getEntry(addr);
+      const table = this.symbolTable.getEntry(column.scope.parent);
+      tables[table.name].fields.add(column.name);
+    });
+
+    this.selectionList.forEach((expr, index) => {
+      if (typeof expr !== 'string') {
+        // [ term1 relop term2 ]
+        const terms = [expr[0], expr[2]];
+        // tables envolved
+        terms.forEach((term) => {
+          if (term.type === TokenType.IDENTIFIER) {
+            const field = this.symbolTable.getEntry(term.value);
+            const table = this.symbolTable.getEntry(field.scope.parent);
+            tables[table.name].fields.add(field.name);
+          }
+        });
+      }
+    });
+
     console.log(tables);
-    console.log(joins);
+
+    // for (let i = 0; i < selection.length; i++) {
+    //   const el = selection[i]
+    //   if ((el === 'AND' || el === 'OR') && (i % 2 === 0)) {
+    //     selection.splice(i, 1)
+    //   }
+    // }
+
+    // console.log(tables)
+    // console.log(joins)
+    // console.log(selection)
+
+    // Generate the tree
+    // const pList = this.projectionList.map((addr) =>
+    //   this.symbolTable.getEntry(addr)
+    // );
+
+    // const pListStr = pList.map((e) => {
+    //   const tbl = this.symbolTable.getEntry(e.scope.parent);
+    //   return `${tbl.name}.${e.name}`;
+    // });
+
+    // // Add Projection
+    // const proj = `π(${pListStr.reduce((str, tbl) => `${str}, ${tbl}`)})`
+
+    // const sList = this.selectionList.map((el) => {
+    //   if (typeof el !== 'string') {
+    //     // array
+    //     let term1, term2: string
+
+    //     if (el[0].type === TokenType.IDENTIFIER) {
+    //       const column = this.symbolTable.getEntry(el[0].value)
+    //       const table = this.symbolTable.getEntry(column.scope.parent)
+    //       term1 = `${table.name}.${column.name}`
+    //     } else {
+    //       term1 = el[0].value
+    //     }
+
+    //     if (el[2].type === TokenType.IDENTIFIER) {
+    //       const column = this.symbolTable.getEntry(el[2].value)
+    //       const table = this.symbolTable.getEntry(column.scope.parent)
+    //       term2 = `${table.name}.${column.name}`
+    //     } else {
+    //       term2 = el[2].value
+    //     }
+
+    //     return `${term1} ${el[1]} ${term2}`
+    //   } else {
+    //     return ` ${el} `
+    //   }
+    // })
+
+    // const sListStr = sList.join('')
+    // const sel = `σ(${sListStr})`
+
+    // console.log(Object.keys(joins))
+
+    // const g = graphviz.digraph('G')
+    // // Projections
+    // let n1 = g.addNode(proj)
+    // let n2 = g.addNode(sel)
+
+    // g.addEdge(n1, n2)
+    // n1 = n2
+    // // n2 = null
+
+    // if (Object.keys(joins).length > 0) {
+    //   Object.keys(joins).forEach(el => {
+    //     const join = joins[el]
+    //     n2 = g.addNode(`${join.type}[${join.conditions}]`)
+    //     g.addEdge(n1, n2)
+    //     n1 = n2
+    //     // join.tables.forEach(tbl => {
+    //     //   if (tbl.) {
+
+    //     //   }
+    //     // })
+    //   })
+    // } else {
+    //   // dont have joins
+    // }
+
+    // console.log(g.to_dot())
+
+    // console.log(tables);
+    // console.log(joins);
   }
 }
