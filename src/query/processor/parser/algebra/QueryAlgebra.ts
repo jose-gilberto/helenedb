@@ -360,7 +360,114 @@ export default class QueryAlgebra {
       }
     });
 
-    console.log(tables);
+    // console.log(this.projectionList);
+    const projectionFields: string[] = [];
+    this.projectionList.forEach((addr) => {
+      const c = this.symbolTable.getEntry(addr);
+      const t = this.symbolTable.getEntry(c.scope.parent);
+      projectionFields.push(`${t.name}.${c.name}`);
+    });
+
+    // console.log(optSelections)
+    // console.log(this.selectionList)
+
+    const remainSelections = [
+      ...this.selectionList.filter((el, id) => {
+        return !optSelections.includes(id);
+      }),
+    ];
+    const finalSelections = [];
+
+    for (let i = 0; i < remainSelections.length; i++) {
+      if (!optSelections.includes(i)) {
+        if (typeof remainSelections[i] === 'string') {
+          if (
+            i - 1 >= 0 &&
+            typeof remainSelections[i - 1] !== 'string' &&
+            i + 1 < remainSelections.length &&
+            remainSelections[i + 1] !== 'string'
+          ) {
+            finalSelections.push(i);
+          }
+        } else {
+          finalSelections.push(i);
+        }
+      }
+    }
+
+    // console.log(finalSelections)
+
+    const optTree: { [key: string]: any } = {
+      type: 'projection',
+      variant: 'array',
+      statement: projectionFields,
+      child: [],
+    };
+    console.log(optTree['child']);
+
+    if (finalSelections.length > 0) {
+      // Do this
+    } else {
+      let node = optTree;
+      Object.keys(joins).forEach((join) => {
+        node['child'].push({
+          type: 'join',
+          variant: 'array',
+          statement: [
+            ...this.selectionList.filter((el, id) =>
+              joins[join].conditions.includes(id)
+            ),
+          ],
+          child: [],
+        });
+        node = node['child'][node['child'].length - 1];
+        joins[join].tables.forEach((el) => {
+          if (!el.match(/join[0-9]/)) {
+            const table = tables[el];
+            if (table.conditions.length > 0) {
+              node['child'].push({
+                type: 'selection',
+                variant: 'array',
+                statement: [
+                  ...this.selectionList.filter((el, id) =>
+                    table.conditions.includes(id)
+                  ),
+                ],
+                child: [
+                  {
+                    type: 'projection',
+                    variant: 'set',
+                    statement: table.fields,
+                    child: [
+                      {
+                        type: 'table',
+                        variant: 'string',
+                        statement: el,
+                      },
+                    ],
+                  },
+                ],
+              });
+            } else {
+              node['child'].push({
+                type: 'projection',
+                variant: 'set',
+                statement: table.fields,
+                child: [
+                  {
+                    type: 'table',
+                    variant: 'string',
+                    statement: el,
+                  },
+                ],
+              });
+            }
+          }
+        });
+      });
+    }
+
+    console.log(JSON.stringify(optTree));
 
     // for (let i = 0; i < selection.length; i++) {
     //   const el = selection[i]
