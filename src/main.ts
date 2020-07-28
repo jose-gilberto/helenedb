@@ -19,19 +19,20 @@ WHERE employee.pname = 'Aquarius' AND project.pnumber = works_on.pno AND employe
 // WHERE product.id_category = category.id AND product.value > 50.00;
 // `;
 
-const sb = new SymbolTable();
+// const sb = new SymbolTable();
+
 const lexer = new Lexer();
 const tokens = lexer.start(program);
 
-// console.log(tokens);
+console.log(tokens);
 
-const parser = new Parser(tokens, sb);
+// const parser = new Parser(tokens, sb);
 
-const tree = parser.getTree();
+// const tree = parser.getTree();
 
 // Optimizer.optmizeQuery(tree, sb)
 // tree.postOrder(tree.getRoot())
 // console.log(sb);
 
-const qAlgebra = parser.getData();
-qAlgebra.optimizeTree();
+// const qAlgebra = parser.getData();
+// qAlgebra.optimizeTree();

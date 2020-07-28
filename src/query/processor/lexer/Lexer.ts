@@ -1,5 +1,6 @@
 import TokenType from './token/TokenType';
 import Token from './token/Token';
+import LexicalError from './LexicalError';
 
 export default class Lexer {
   public static readonly KEYWORDS: TokenType[] = [
@@ -83,7 +84,7 @@ export default class Lexer {
             lexem += currChar;
             continue;
           } else {
-            throw new Error('Lexical Error');
+            throw new LexicalError('Lexical Error');
           }
         case 1:
           if (currChar === '.') {
@@ -114,7 +115,12 @@ export default class Lexer {
             continue;
           }
         case 3:
-          return new Token(TokenType.NUMBER_LITERAL, Number(lexem));
+          return new Token(
+            TokenType.NUMBER_LITERAL,
+            Number(lexem),
+            this.colCounter - lexem.length,
+            this.lineCounter
+          );
       }
     }
     throw new Error('Stack overflow');
@@ -133,7 +139,7 @@ export default class Lexer {
             this.colCounter++;
             continue;
           } else {
-            throw new Error('Lexical Error');
+            throw new LexicalError('Lexical Error');
           }
         case 1:
           if (currChar === "'") {
@@ -152,9 +158,19 @@ export default class Lexer {
           if (
             lexem.match(/^\d{4}-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01])$/)
           ) {
-            return new Token(TokenType.DATE_LITERAL, lexem);
+            return new Token(
+              TokenType.DATE_LITERAL,
+              lexem,
+              this.colCounter - lexem.length,
+              this.lineCounter
+            );
           }
-          return new Token(TokenType.TEXT_LITERAL, lexem);
+          return new Token(
+            TokenType.TEXT_LITERAL,
+            lexem,
+            this.colCounter - lexem.length,
+            this.lineCounter
+          );
       }
     }
     throw new Error('Unsurported operation');
@@ -181,17 +197,32 @@ export default class Lexer {
           if (Lexer.KEYWORDS.includes(lexem.toUpperCase() as TokenType)) {
             // TODO: implements token line and col
             const tType = lexem.toUpperCase() as TokenType;
-            return new Token(tType, '');
+            return new Token(
+              tType,
+              '',
+              this.colCounter - lexem.length,
+              this.lineCounter
+            );
           }
 
           // Support Data Types
           if (Lexer.DATATYPES.includes(lexem.toUpperCase() as TokenType)) {
             const tType = lexem.toUpperCase() as TokenType;
-            return new Token(tType, '');
+            return new Token(
+              tType,
+              '',
+              this.colCounter - lexem.length,
+              this.lineCounter
+            );
           }
 
           // TODO: implements token to receive lexem and addr
-          return new Token(TokenType.IDENTIFIER, lexem);
+          return new Token(
+            TokenType.IDENTIFIER,
+            lexem,
+            this.colCounter - lexem.length,
+            this.lineCounter
+          );
       }
     }
     throw new Error('Stack overflow');
@@ -217,15 +248,30 @@ export default class Lexer {
             this.programCounter++;
             this.colCounter++;
           } else {
-            throw Error('Not suported yet');
+            throw new LexicalError('Not suported yet');
           }
           break;
         case 1:
-          return new Token(TokenType.SEMICOLON, '');
+          return new Token(
+            TokenType.SEMICOLON,
+            '',
+            this.colCounter - 1,
+            this.lineCounter
+          );
         case 2:
-          return new Token(TokenType.DOT, '');
+          return new Token(
+            TokenType.DOT,
+            '',
+            this.colCounter - 1,
+            this.lineCounter
+          );
         case 3:
-          return new Token(TokenType.COMMA, '');
+          return new Token(
+            TokenType.COMMA,
+            '',
+            this.colCounter - 1,
+            this.lineCounter
+          );
       }
     }
     throw new Error('Stack overflow');
@@ -241,21 +287,41 @@ export default class Lexer {
           if (currChar == '(') {
             this.programCounter++;
             this.colCounter++;
-            return new Token(TokenType.LPAR, '');
+            return new Token(
+              TokenType.LPAR,
+              '',
+              this.colCounter - 1,
+              this.lineCounter
+            );
           } else if (currChar == ')') {
             this.programCounter++;
             this.colCounter++;
-            return new Token(TokenType.RPAR, '');
+            return new Token(
+              TokenType.RPAR,
+              '',
+              this.colCounter - 1,
+              this.lineCounter
+            );
           } else if (currChar == '[') {
             this.programCounter++;
             this.colCounter++;
-            return new Token(TokenType.LBRC, '');
+            return new Token(
+              TokenType.LBRC,
+              '',
+              this.colCounter - 1,
+              this.lineCounter
+            );
           } else if (currChar == ']') {
             this.programCounter++;
             this.colCounter++;
-            return new Token(TokenType.RBRC, '');
+            return new Token(
+              TokenType.RBRC,
+              '',
+              this.colCounter - 1,
+              this.lineCounter
+            );
           } else {
-            throw new Error('Lexical Error');
+            throw new LexicalError('Lexical Error');
           }
       }
     }
@@ -272,21 +338,41 @@ export default class Lexer {
           if (currChar === '+') {
             this.programCounter++;
             this.colCounter++;
-            return new Token(TokenType.PLUS, '');
+            return new Token(
+              TokenType.PLUS,
+              '',
+              this.colCounter - 1,
+              this.lineCounter
+            );
           } else if (currChar === '-') {
             this.programCounter++;
             this.colCounter++;
-            return new Token(TokenType.MINUS, '');
+            return new Token(
+              TokenType.MINUS,
+              '',
+              this.colCounter - 1,
+              this.lineCounter
+            );
           } else if (currChar === '/') {
             this.programCounter++;
             this.colCounter++;
-            return new Token(TokenType.DIV, '');
+            return new Token(
+              TokenType.DIV,
+              '',
+              this.colCounter - 1,
+              this.lineCounter
+            );
           } else if (currChar === '*') {
             this.programCounter++;
             this.colCounter++;
-            return new Token(TokenType.MULT, '');
+            return new Token(
+              TokenType.MULT,
+              '',
+              this.colCounter - 1,
+              this.lineCounter
+            );
           } else {
-            throw new Error('Lexical Error');
+            throw new LexicalError('Lexical Error');
           }
       }
     }
@@ -321,33 +407,63 @@ export default class Lexer {
             this.colCounter++;
             continue;
           } else {
-            throw new Error('Lexical Error');
+            throw new LexicalError('Lexical Error');
           }
         case 1:
-          return new Token(TokenType.EQ, '');
+          return new Token(
+            TokenType.EQ,
+            '',
+            this.colCounter - 1,
+            this.lineCounter
+          );
         case 2:
           if (currChar === '=') {
             this.programCounter++;
             this.colCounter++;
-            return new Token(TokenType.LEQ, '');
+            return new Token(
+              TokenType.LEQ,
+              '',
+              this.colCounter - 2,
+              this.lineCounter
+            );
           } else {
-            return new Token(TokenType.LESS, '');
+            return new Token(
+              TokenType.LESS,
+              '',
+              this.colCounter - 1,
+              this.lineCounter
+            );
           }
         case 3:
           if (currChar === '=') {
             this.programCounter++;
             this.colCounter++;
-            return new Token(TokenType.GEQ, '');
+            return new Token(
+              TokenType.GEQ,
+              '',
+              this.colCounter - 2,
+              this.lineCounter
+            );
           } else {
-            return new Token(TokenType.GRT, '');
+            return new Token(
+              TokenType.GRT,
+              '',
+              this.colCounter - 1,
+              this.lineCounter
+            );
           }
         case 4:
           if (currChar === '=') {
             this.programCounter++;
             this.colCounter++;
-            return new Token(TokenType.DIFF, '');
+            return new Token(
+              TokenType.DIFF,
+              '',
+              this.colCounter - 2,
+              this.lineCounter
+            );
           } else {
-            throw new Error('Lexical Error');
+            throw new LexicalError('Lexical Error');
           }
       }
     }
@@ -396,7 +512,7 @@ export default class Lexer {
         // relational operators
         this.tokens.push(this.relopAutomata(sourceCode));
       } else {
-        throw Error('Lexical Error');
+        throw new LexicalError('Lexical Error');
       }
     }
   }
