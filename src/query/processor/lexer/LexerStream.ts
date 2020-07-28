@@ -59,7 +59,9 @@ export default class LexerStream {
     const token = this.tokens[this.p];
 
     if (token.getType() !== TokenType.IDENTIFIER) {
-      throw new Error('Bad Syntax identifier');
+      throw new Error(
+        `Bad Syntax: Expect a Identifier - Got a ${token.getType()}`
+      );
     }
 
     this.p++;

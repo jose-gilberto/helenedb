@@ -152,7 +152,7 @@ export default class Lexer {
           if (
             lexem.match(/^\d{4}-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01])$/)
           ) {
-            return new Token(TokenType.DATE, lexem);
+            return new Token(TokenType.DATE_LITERAL, lexem);
           }
           return new Token(TokenType.TEXT_LITERAL, lexem);
       }
