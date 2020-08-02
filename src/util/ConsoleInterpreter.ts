@@ -1,4 +1,5 @@
 import * as readline from 'readline';
+import Lexer from '../query/processor/lexer/Lexer';
 
 enum MetaCommand {
   EXIT,
@@ -30,6 +31,10 @@ export default class ConsoleInterpreter {
             console.log(`Unrecognized command ${line}. \n`);
             break;
         }
+      } else {
+        const lexer = new Lexer();
+        const tokens = lexer.start(line);
+        console.log(tokens);
       }
       rl.prompt();
     }).on('close', function () {
