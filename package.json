@@ -7,7 +7,8 @@
     "test": "jest",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "npm run lint -- --fix",
-    "console": "ts-node src/console.ts"
+    "console": "ts-node src/console.ts",
+    "develop": "ts-node ./src/main.ts"
   },
   "repository": {
     "type": "git",
@@ -34,5 +35,9 @@
     "ts-jest": "^26.1.1",
     "ts-node": "^8.10.2",
     "typescript": "^3.9.5"
+  },
+  "dependencies": {
+    "@types/graphviz": "0.0.32",
+    "graphviz": "0.0.9"
   }
 }
