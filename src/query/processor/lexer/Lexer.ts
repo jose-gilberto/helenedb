@@ -73,7 +73,7 @@ export default class Lexer {
   public numberAutomata(sourceCode: string): Token {
     let state = 0,
       lexem = '';
-    while (this.programCounter < sourceCode.length) {
+    while (this.programCounter < sourceCode.length || state === 3) {
       const currChar = sourceCode[this.programCounter];
       switch (state) {
         case 0:
