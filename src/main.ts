@@ -7,10 +7,14 @@ import Parser from './query/processor/parser/Parser';
 import QueryAlgebra from './query/processor/parser/algebra/QueryAlgebra';
 import Optimizer from './query/optimizer/Optmizer';
 
+// const program = `
+// SELECT employee.lname
+// FROM employee, works_on, project
+// WHERE employee.pname = 'Aquarius' AND project.pnumber = works_on.pno AND employee.ssn = works_on.ssn AND project.pdate > '2020-10-03';
+// `;
+
 const program = `
-SELECT employee.lname
-FROM employee, works_on, project
-WHERE employee.pname = 'Aquarius' AND project.pnumber = works_on.pno AND employee.ssn = works_on.ssn AND project.pdate > '2020-10-03';
+SELECT table.id FROM table WHERE table.id = 1;
 `;
 
 // const program = `
@@ -19,7 +23,8 @@ WHERE employee.pname = 'Aquarius' AND project.pnumber = works_on.pno AND employe
 // WHERE product.id_category = category.id AND product.value > 50.00;
 // `;
 
-const sb = new SymbolTable();
+// const sb = new SymbolTable();
+
 const lexer = new Lexer();
 const tokens = lexer.start(program);
 
