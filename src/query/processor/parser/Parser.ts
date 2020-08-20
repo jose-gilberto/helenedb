@@ -263,6 +263,10 @@ export default class Parser {
 
       // WHERE camp = 12 AND x = y OR s = 3
 
+      if (this.tokenStream.getToken() === undefined) {
+        throw new Error('Syntax Error: Expect a ; Token');
+      }
+
       while (
         this.tokenStream.getToken().getType() === TokenType.AND ||
         this.tokenStream.getToken().getType() === TokenType.OR

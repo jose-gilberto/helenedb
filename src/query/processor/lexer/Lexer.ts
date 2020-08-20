@@ -129,7 +129,7 @@ export default class Lexer {
   public textDateAutomata(sourceCode: string): Token {
     let state = 0,
       lexem = '';
-    while (this.programCounter < sourceCode.length) {
+    while (this.programCounter < sourceCode.length || state == 2) {
       const currChar = sourceCode[this.programCounter];
       switch (state) {
         case 0:
@@ -173,7 +173,7 @@ export default class Lexer {
           );
       }
     }
-    throw new Error('Unsurported operation');
+    throw new Error('Stack overflow');
   }
 
   public identifierAutomata(sourceCode: string): Token {
@@ -230,7 +230,7 @@ export default class Lexer {
 
   public symbolsAutomata(sourceCode: string): Token {
     let state = 0;
-    while (this.programCounter < sourceCode.length) {
+    while (this.programCounter < sourceCode.length || state != 0) {
       const currChar = sourceCode[this.programCounter];
       switch (state) {
         case 0:

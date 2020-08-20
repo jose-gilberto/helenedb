@@ -403,12 +403,57 @@ export default class QueryAlgebra {
       statement: projectionFields,
       child: [],
     };
-    console.log(optTree['child']);
+
+    console.log(tables);
 
     if (finalSelections.length > 0) {
       // Do this
     } else {
       let node = optTree;
+
+      if (Object.keys(joins).length === 0) {
+        const tableName = Object.keys(tables)[0];
+        const table = tables[tableName];
+        if (table.conditions.length > 0) {
+          node['child'].push({
+            type: 'selection',
+            variant: 'array',
+            statement: [
+              ...this.selectionList.filter((el, id) =>
+                table.conditions.includes(id)
+              ),
+            ],
+            child: [
+              {
+                type: 'projection',
+                variant: 'set',
+                statement: Array.from(table.fields),
+                child: [
+                  {
+                    type: 'table',
+                    variant: 'string',
+                    statement: tableName,
+                  },
+                ],
+              },
+            ],
+          });
+        } else {
+          node['child'].push({
+            type: 'projection',
+            variant: 'set',
+            statement: Array.from(table.fields),
+            child: [
+              {
+                type: 'table',
+                variant: 'string',
+                statement: tableName,
+              },
+            ],
+          });
+        }
+      }
+
       Object.keys(joins).forEach((join) => {
         node['child'].push({
           type: 'join',
@@ -437,7 +482,7 @@ export default class QueryAlgebra {
                   {
                     type: 'projection',
                     variant: 'set',
-                    statement: table.fields,
+                    statement: Array.from(table.fields),
                     child: [
                       {
                         type: 'table',
@@ -452,7 +497,7 @@ export default class QueryAlgebra {
               node['child'].push({
                 type: 'projection',
                 variant: 'set',
-                statement: table.fields,
+                statement: Array.from(table.fields),
                 child: [
                   {
                     type: 'table',
