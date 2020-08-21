@@ -1,5 +1,4 @@
 // This is a test file, do not leave them to production
-
 import Lexer from './query/processor/lexer/Lexer';
 import SymbolTable from './query/processor/symbol-table/SymbolTable';
 import TokenType from './query/processor/lexer/token/TokenType';
@@ -15,7 +14,6 @@ import Optimizer from './query/optimizer/Optmizer';
 
 // const program = `SELECT table.id FROM table WHERE table.id = '1' AND table.name = 'João';`;
 
-// DEU PAU AQUI
 const program = `
 SELECT product.name
 FROM product, category
@@ -27,7 +25,7 @@ const sb = new SymbolTable();
 const lexer = new Lexer();
 const tokens = lexer.start(program);
 
-console.log(tokens);
+console.log(JSON.stringify(tokens));
 
 const parser = new Parser(tokens, sb);
 

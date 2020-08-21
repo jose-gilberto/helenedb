@@ -245,7 +245,10 @@ export default class QueryAlgebra {
         if (i == this.tableList.length - 2) {
           // last - 1
           const tbl1 = this.symbolTable.getEntry(this.tableList[i]);
-          const tbl2 = this.symbolTable.getEntry(this.tableList[i] + 1);
+          const tbl2 = this.symbolTable.getEntry(this.tableList[i + 1]);
+
+          // console.log(tbl1, tbl2)
+
           // others
           joins[`join${i}`] = {
             type: 'x',
@@ -403,8 +406,6 @@ export default class QueryAlgebra {
       statement: projectionFields,
       child: [],
     };
-
-    console.log(tables);
 
     if (finalSelections.length > 0) {
       // Do this
