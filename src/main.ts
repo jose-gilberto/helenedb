@@ -13,13 +13,14 @@ import Optimizer from './query/optimizer/Optmizer';
 // WHERE employee.pname = 'Aquarius' AND project.pnumber = works_on.pno AND employee.ssn = works_on.ssn AND project.pdate > '2020-10-03';
 // `;
 
-const program = `SELECT table.id FROM table WHERE table.id = '1';`;
+// const program = `SELECT table.id FROM table WHERE table.id = '1' AND table.name = 'João';`;
 
-// const program = `
-// SELECT product.name
-// FROM product, category
-// WHERE product.id_category = category.id AND product.value > 50.00;
-// `;
+// DEU PAU AQUI
+const program = `
+SELECT product.name
+FROM product, category
+WHERE product.id_category = category.id AND product.value > 50.00;
+`;
 
 const sb = new SymbolTable();
 
