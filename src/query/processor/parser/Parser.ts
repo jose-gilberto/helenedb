@@ -4,11 +4,15 @@ import Token from '../lexer/token/Token';
 import TokenType from '../lexer/token/TokenType';
 import SymbolTableEntry from '../symbol-table/SymbolTableEntry.interface';
 import QueryAlgebra from './algebra/QueryAlgebra';
+import Optimizer from '../../optimizer/Optmizer';
+import AlgebraTree from './algebra/structures/AlgebraTree';
 
 export default class Parser {
   private actions: Array<string>;
   private symbolTable: SymbolTable;
   private tokenStream: LexerStream;
+  private tree: AlgebraTree | undefined;
+  private data: QueryAlgebra | undefined;
 
   constructor(tokenList: Array<Token>, symbolTable: SymbolTable) {
     this.tokenStream = new LexerStream(tokenList);
@@ -259,6 +263,10 @@ export default class Parser {
 
       // WHERE camp = 12 AND x = y OR s = 3
 
+      if (this.tokenStream.getToken() === undefined) {
+        throw new Error('Syntax Error: Expect a ; Token');
+      }
+
       while (
         this.tokenStream.getToken().getType() === TokenType.AND ||
         this.tokenStream.getToken().getType() === TokenType.OR
@@ -387,6 +395,19 @@ export default class Parser {
       tableList,
       this.symbolTable
     );
+
+    this.tree = qAlgebra.initialRepr();
+    this.data = qAlgebra;
+  }
+
+  public getTree(): AlgebraTree {
+    if (this.tree === undefined) throw new Error();
+    return this.tree;
+  }
+
+  public getData(): QueryAlgebra {
+    if (this.data === undefined) throw new Error();
+    return this.data;
   }
 
   private startParser(): void {

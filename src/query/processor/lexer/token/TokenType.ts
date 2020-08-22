@@ -26,8 +26,8 @@ enum TokenType {
   // Operators
   PLUS = '+',
   MINUS = '-',
-  DIV = '/',
-  MULT = '*',
+  SLASH = '/',
+  STAR = '*',
 
   // Relational Operators
   EQ = '=',
@@ -87,6 +87,10 @@ enum TokenType {
   VALUES = 'VALUES',
   VIEW = 'VIEW',
   WHERE = 'WHERE',
+
+  EOF = '/0',
+  WHITESPACE = 'WHITESPACE',
+  BAD_TOKEN = 'BAD_TOKEN',
 }
 
 export default TokenType;
