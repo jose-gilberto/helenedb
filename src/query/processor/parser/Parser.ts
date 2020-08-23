@@ -1,416 +1,99 @@
-import SymbolTable from '../symbol-table/SymbolTable';
-import LexerStream from '../lexer/LexerStream';
 import Token from '../lexer/token/Token';
+import Lexer from '../lexer/Lexer';
 import TokenType from '../lexer/token/TokenType';
-import SymbolTableEntry from '../symbol-table/SymbolTableEntry.interface';
-import QueryAlgebra from './algebra/QueryAlgebra';
-import Optimizer from '../../optimizer/Optmizer';
-import AlgebraTree from './algebra/structures/AlgebraTree';
+
+class AST {}
+
+class BinaryOperation extends AST {
+  public left: any;
+  public operator: Token;
+  public right: any;
+
+  constructor(left: any, operator: Token, right: any) {
+    super();
+    this.left = left;
+    this.operator = operator;
+    this.right = right;
+  }
+}
+
+class NumberExpression extends AST {
+  public number: Token;
+  public value: number | string;
+
+  constructor(number: Token) {
+    super();
+    this.number = number;
+    this.value = number.getValue();
+  }
+}
 
 export default class Parser {
-  private actions: Array<string>;
-  private symbolTable: SymbolTable;
-  private tokenStream: LexerStream;
-  private tree: AlgebraTree | undefined;
-  private data: QueryAlgebra | undefined;
+  private lexer: Lexer;
+  private current: Token;
 
-  constructor(tokenList: Array<Token>, symbolTable: SymbolTable) {
-    this.tokenStream = new LexerStream(tokenList);
-    this.symbolTable = symbolTable;
-    this.actions = ['S', '$']; // TODO: implements actions
-    this.startParser();
+  constructor(program: string) {
+    this.lexer = new Lexer(program);
+    this.current = this.lexer.nextToken();
   }
 
-  private stmt(): void {
-    const token = this.tokenStream.getToken();
-    // TODO: explain clause
-
-    if (token.getType() === TokenType.CREATE) this.create();
-    else if (
-      token.getType() === TokenType.SELECT ||
-      token.getType() === TokenType.EXPLAIN
-    )
-      this.select();
+  private error() {
+    throw new Error();
   }
 
-  private create(): void {
-    this.tokenStream.consumeKeyword(TokenType.CREATE);
-    const token = this.tokenStream.getToken();
-
-    if (token.getType() === TokenType.SCHEMA) this.createSchema();
+  public eat(type: TokenType) {
+    if (this.current.getType() === type) this.current = this.lexer.nextToken();
+    else this.error();
   }
 
-  private createSchema(): void {
-    this.tokenStream.consumeKeyword(TokenType.SCHEMA);
-
-    const schemaAddr = this.tokenStream.consumeIdentifier();
-    console.log(schemaAddr);
-
-    if (this.tokenStream.getToken().getType() === TokenType.SEMICOLON) {
-      // public schema
-      this.tokenStream.consumeSymbol(';');
-    } else {
-      // Authorization Clause
-      this.tokenStream.consumeKeyword(TokenType.AUTHORIZATION);
-
-      const userAddr = this.tokenStream.consumeIdentifier();
-      console.log(userAddr);
-
-      this.tokenStream.consumeSymbol(';');
+  public factor() {
+    const token = this.current;
+    if (token.getType() === TokenType.NUMBER_LITERAL) {
+      this.eat(TokenType.NUMBER_LITERAL);
+      return new NumberExpression(token);
+    } else if (token.getType() === TokenType.LPAR) {
+      this.eat(TokenType.LPAR);
+      const node = this.expr();
+      this.eat(TokenType.RPAR);
+      return node;
     }
   }
 
-  private select(): void {
-    // Explain support
-    // const explain = (this.tokenStream.getToken().getType() === TokenType.EXPLAIN) ? true : false;
-
-    // TODO: add suport to GROUP BY and ORDER BY
-    // <select-stmt> -> SELECT <field-list> FROM <tbl-list> <where-stmt>
-    // consume SELECT on stack
-    this.tokenStream.consumeKeyword(TokenType.SELECT);
-
-    // <field-list> -> <field-def> <ofield-def>
-    // <field-def> -> IDENTIFIER.IDENTIFIER
-    // <ofield-def> -> EPSILON | <field-list>
-
-    const fieldList = [];
-
-    while (this.tokenStream.getToken() != undefined) {
-      // { tbl: id, field: field }
-
-      const table = this.tokenStream.consumeIdentifier();
-      const tableEntry: SymbolTableEntry = {
-        name: table,
-        scope: {
-          type: 0,
-          parent: -1,
-        },
-        type: 'table',
-      };
-
-      const tableAddr = this.symbolTable.add(tableEntry);
-
-      this.tokenStream.consumeSymbol(TokenType.DOT);
-
-      const column = this.tokenStream.consumeIdentifier();
-      const columnEntry: SymbolTableEntry = {
-        name: column,
-        scope: {
-          type: 1,
-          parent: tableAddr,
-        },
-        type: 'column',
-      };
-
-      const columnAddr = this.symbolTable.add(columnEntry);
-
-      // addr like id-number
-      fieldList.push(columnAddr);
-
-      if (this.tokenStream.getToken().getType() !== TokenType.COMMA) break;
-      else {
-        this.tokenStream.consumeSymbol(TokenType.COMMA);
+  public term() {
+    let node: any = this.factor();
+    while (
+      this.current.getType() === TokenType.STAR ||
+      this.current.getType() === TokenType.SLASH
+    ) {
+      const token = this.current;
+      if (token.getType() === TokenType.STAR) {
+        this.eat(TokenType.STAR);
+      } else if (token.getType() === TokenType.SLASH) {
+        this.eat(TokenType.SLASH);
       }
+      node = new BinaryOperation(node, token, this.factor());
     }
-
-    // consume FROM on stack
-    this.tokenStream.consumeKeyword(TokenType.FROM);
-
-    const tableList = [];
-
-    while (this.tokenStream.getToken() != undefined) {
-      const table = this.tokenStream.consumeIdentifier();
-      const tableEntry: SymbolTableEntry = {
-        name: table,
-        scope: {
-          type: 0,
-          parent: -1,
-        },
-        type: 'table',
-      };
-      const tableAddr = this.symbolTable.add(tableEntry);
-
-      // addr like id-number
-      tableList.push(tableAddr);
-
-      if (this.tokenStream.getToken().getType() !== TokenType.COMMA) break;
-      else {
-        this.tokenStream.consumeSymbol(TokenType.COMMA);
-      }
-    }
-
-    // <where-stmt> -> EPSILON | WHERE <predicate>
-    // <predicate> -> <term-nd> <term-or>
-    // <term-or> -> EPSILON | OR <term-nd> <term-or>
-    // <term-nd> -> <expr> <term-n>
-    // <term-n> -> AND <expr> <term-n> | EPSILON
-    // <expr> -> <term> <relop> <term>
-    // <term> -> <constant> | <field>
-    const predicate = new Array<any>();
-
-    if (this.tokenStream.getToken().getType() === TokenType.WHERE) {
-      // WHERE clause
-      // consume WHERE
-      this.tokenStream.consumeKeyword(TokenType.WHERE);
-
-      let expr = [];
-
-      // TODO: create consumeTerm function on lexer stream
-      if (this.tokenStream.getToken().getType() === TokenType.DATE_LITERAL) {
-        expr.push({
-          type: TokenType.DATE_LITERAL,
-          value: this.tokenStream.consumeDate(),
-        });
-      } else if (
-        this.tokenStream.getToken().getType() === TokenType.TEXT_LITERAL
-      ) {
-        expr.push({
-          type: TokenType.TEXT_LITERAL,
-          value: this.tokenStream.consumeText(),
-        });
-      } else if (
-        this.tokenStream.getToken().getType() === TokenType.NUMBER_LITERAL
-      ) {
-        expr.push({
-          type: TokenType.NUMBER_LITERAL,
-          value: this.tokenStream.consumeNumber(),
-        });
-      } else {
-        const table = this.tokenStream.consumeIdentifier();
-        const tableEntry: SymbolTableEntry = {
-          name: table,
-          scope: {
-            type: 0,
-            parent: -1,
-          },
-          type: 'table',
-        };
-        const tableAddr = this.symbolTable.add(tableEntry);
-
-        this.tokenStream.consumeSymbol(TokenType.DOT);
-
-        const column = this.tokenStream.consumeIdentifier();
-        const columnEntry: SymbolTableEntry = {
-          name: column,
-          scope: {
-            type: 1,
-            parent: tableAddr,
-          },
-          type: 'column',
-        };
-        const columnAddr = this.symbolTable.add(columnEntry);
-
-        expr.push({
-          type: TokenType.IDENTIFIER,
-          value: columnAddr,
-        });
-      }
-
-      const relop = this.tokenStream.consumeRelop();
-      expr.push(relop);
-
-      if (this.tokenStream.getToken().getType() === TokenType.DATE_LITERAL) {
-        expr.push({
-          type: TokenType.DATE_LITERAL,
-          value: this.tokenStream.consumeDate(),
-        });
-      } else if (
-        this.tokenStream.getToken().getType() === TokenType.TEXT_LITERAL
-      ) {
-        expr.push({
-          type: TokenType.TEXT_LITERAL,
-          value: this.tokenStream.consumeText(),
-        });
-      } else if (
-        this.tokenStream.getToken().getType() === TokenType.NUMBER_LITERAL
-      ) {
-        expr.push({
-          type: TokenType.NUMBER_LITERAL,
-          value: this.tokenStream.consumeNumber(),
-        });
-      } else {
-        const table = this.tokenStream.consumeIdentifier();
-        const tableEntry: SymbolTableEntry = {
-          name: table,
-          scope: {
-            type: 0,
-            parent: -1,
-          },
-          type: 'table',
-        };
-        const tableAddr = this.symbolTable.add(tableEntry);
-
-        this.tokenStream.consumeSymbol(TokenType.DOT);
-
-        const column = this.tokenStream.consumeIdentifier();
-        const columnEntry: SymbolTableEntry = {
-          name: column,
-          scope: {
-            type: 1,
-            parent: tableAddr,
-          },
-          type: 'column',
-        };
-        const columnAddr = this.symbolTable.add(columnEntry);
-
-        expr.push({
-          type: TokenType.IDENTIFIER,
-          value: columnAddr,
-        });
-      }
-
-      predicate.push(expr);
-
-      // WHERE camp = 12 AND x = y OR s = 3
-
-      if (this.tokenStream.getToken() === undefined) {
-        throw new Error('Syntax Error: Expect a ; Token');
-      }
-
-      while (
-        this.tokenStream.getToken().getType() === TokenType.AND ||
-        this.tokenStream.getToken().getType() === TokenType.OR
-      ) {
-        predicate.push(this.tokenStream.consumeAndOr());
-        expr = [];
-
-        if (this.tokenStream.getToken().getType() === TokenType.DATE_LITERAL) {
-          expr.push({
-            type: TokenType.DATE_LITERAL,
-            value: this.tokenStream.consumeDate(),
-          });
-        } else if (
-          this.tokenStream.getToken().getType() === TokenType.TEXT_LITERAL
-        ) {
-          expr.push({
-            type: TokenType.TEXT_LITERAL,
-            value: this.tokenStream.consumeText(),
-          });
-        } else if (
-          this.tokenStream.getToken().getType() === TokenType.NUMBER_LITERAL
-        ) {
-          expr.push({
-            type: TokenType.NUMBER_LITERAL,
-            value: this.tokenStream.consumeNumber(),
-          });
-        } else {
-          const table = this.tokenStream.consumeIdentifier();
-          const tableEntry: SymbolTableEntry = {
-            name: table,
-            scope: {
-              type: 0,
-              parent: -1,
-            },
-            type: 'table',
-          };
-          const tableAddr = this.symbolTable.add(tableEntry);
-
-          this.tokenStream.consumeSymbol(TokenType.DOT);
-
-          const column = this.tokenStream.consumeIdentifier();
-          const columnEntry: SymbolTableEntry = {
-            name: column,
-            scope: {
-              type: 1,
-              parent: tableAddr,
-            },
-            type: 'column',
-          };
-          const columnAddr = this.symbolTable.add(columnEntry);
-
-          expr.push({
-            type: TokenType.IDENTIFIER,
-            value: columnAddr,
-          });
-        }
-
-        const relop = this.tokenStream.consumeRelop();
-        expr.push(relop);
-
-        if (this.tokenStream.getToken().getType() === TokenType.DATE_LITERAL) {
-          expr.push({
-            type: TokenType.DATE_LITERAL,
-            value: this.tokenStream.consumeDate(),
-          });
-        } else if (
-          this.tokenStream.getToken().getType() === TokenType.TEXT_LITERAL
-        ) {
-          expr.push({
-            type: TokenType.TEXT_LITERAL,
-            value: this.tokenStream.consumeText(),
-          });
-        } else if (
-          this.tokenStream.getToken().getType() === TokenType.NUMBER_LITERAL
-        ) {
-          expr.push({
-            type: TokenType.NUMBER_LITERAL,
-            value: this.tokenStream.consumeNumber(),
-          });
-        } else {
-          const table = this.tokenStream.consumeIdentifier();
-          const tableEntry: SymbolTableEntry = {
-            name: table,
-            scope: {
-              type: 0,
-              parent: -1,
-            },
-            type: 'table',
-          };
-          const tableAddr = this.symbolTable.add(tableEntry);
-
-          this.tokenStream.consumeSymbol(TokenType.DOT);
-
-          const column = this.tokenStream.consumeIdentifier();
-          const columnEntry: SymbolTableEntry = {
-            name: column,
-            scope: {
-              type: 1,
-              parent: tableAddr,
-            },
-            type: 'column',
-          };
-          const columnAddr = this.symbolTable.add(columnEntry);
-
-          expr.push({
-            type: TokenType.IDENTIFIER,
-            value: columnAddr,
-          });
-        }
-
-        predicate.push(expr);
-      }
-
-      // console.log(predicate);
-    }
-
-    this.tokenStream.consumeSymbol(TokenType.SEMICOLON);
-
-    // console.log(fieldList);
-    // console.log(tableList);
-
-    const qAlgebra = new QueryAlgebra(
-      fieldList,
-      predicate,
-      [],
-      tableList,
-      this.symbolTable
-    );
-
-    this.tree = qAlgebra.initialRepr();
-    this.data = qAlgebra;
+    return node;
   }
 
-  public getTree(): AlgebraTree {
-    if (this.tree === undefined) throw new Error();
-    return this.tree;
+  public expr() {
+    let node = this.term();
+    while (
+      this.current.getType() === TokenType.PLUS ||
+      this.current.getType() === TokenType.MINUS
+    ) {
+      const token = this.current;
+      if (token.getType() === TokenType.PLUS) {
+        this.eat(TokenType.PLUS);
+      } else if (token.getType() === TokenType.MINUS) {
+        this.eat(TokenType.MINUS);
+      }
+      node = new BinaryOperation(node, token, this.term());
+    }
+    return node;
   }
 
-  public getData(): QueryAlgebra {
-    if (this.data === undefined) throw new Error();
-    return this.data;
-  }
-
-  private startParser(): void {
-    this.stmt();
+  public parse() {
+    return this.expr();
   }
 }

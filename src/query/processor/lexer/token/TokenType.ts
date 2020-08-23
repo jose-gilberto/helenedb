@@ -22,7 +22,6 @@ enum TokenType {
   RBRC = ']',
   // LKEY = '{',
   // RKEY = '}',
-
   // Operators
   PLUS = '+',
   MINUS = '-',
@@ -91,6 +90,9 @@ enum TokenType {
   EOF = '/0',
   WHITESPACE = 'WHITESPACE',
   BAD_TOKEN = 'BAD_TOKEN',
+
+  NumberExpression = 'NumberExpression',
+  BinaryExpression = 'BinaryExpression',
 }
 
 export default TokenType;
