@@ -18,17 +18,17 @@ enum TokenType {
   DateLiteral = 'DateLiteral', // TODO: add suport for datetime
   BoolLiteral = 'BoolLiteral', // true or false
   // Separators
-  OpenParenthesisToken = '(', // (
-  CloseParenthesisToken = ')', // )
+  OpenParenthesisToken = 'OpenParenthesisToken', // (
+  CloseParenthesisToken = 'CloseParenthesisToken', // )
   OpenBracketToken = '[', // [
   CloseBracketToken = ']', // ]
   // OpenBraceToken = '{', // {
   // CloseBraceToken = '}', // }
   // Operators
-  PlusToken = '+', // +
-  MinusToken = '-', // -
-  SlashToken = '/', // /
-  StarToken = '*', // *
+  PlusToken = 'PlusToken', // +
+  MinusToken = 'MinusToken', // -
+  SlashToken = 'SlashToken', // /
+  StarToken = 'StarToken', // *
   // Relational Operators
   EqualsToken = '=', // =
   LessToken = '<', // <
@@ -88,8 +88,8 @@ enum TokenType {
   WhereKeyword = 'WHERE',
   // Scape Characters
   EofToken = '/0',
-  WhitespaceToken = 'WHITESPACE',
-  BadToken = 'BAD_TOKEN',
+  WhitespaceToken = 'WhitespaceToken',
+  BadToken = 'BadToken',
   // Comments
 }
 
