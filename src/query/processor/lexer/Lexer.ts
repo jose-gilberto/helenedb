@@ -30,10 +30,8 @@ export default class Lexer {
   }
 
   public nextToken(): Token {
-    // symbols
-
     if (this.position >= this.program.length) {
-      return new Token(TokenType.EOF, '\0', 0, 0);
+      return new Token(TokenType.EofToken, '\0', 0, 0);
     }
 
     if (this.current().match(/[0-9]/)) {
@@ -43,10 +41,9 @@ export default class Lexer {
 
       const length = this.position - start;
       const lexem = this.program.substring(start, start + length);
-      // const value = parseInt(lexem)
-
+      const value = parseInt(lexem);
       // TODO: add columns and rows support
-      return new Token(TokenType.NUMBER_LITERAL, lexem, 0, 0);
+      return new Token(TokenType.IntegerLiteral, value, 0, 0);
     }
 
     if (this.current().match(/\s/)) {
@@ -58,50 +55,46 @@ export default class Lexer {
       const lexem = this.program.substring(start, start + length);
 
       // TODO: add columns and rows support
-      return new Token(TokenType.WHITESPACE, lexem, 0, 0);
+      return new Token(TokenType.WhitespaceToken, lexem, 0, 0);
     }
 
     if (this.current() === '+') {
       // TODO: add columns and rows support
       this.next();
-      return new Token(TokenType.PLUS, '+', 0, 0);
+      return new Token(TokenType.PlusToken, '+', 0, 0);
     }
 
     if (this.current() === '-') {
       // TODO: add columns and rows support
       this.next();
-      return new Token(TokenType.MINUS, '-', 0, 0);
+      return new Token(TokenType.MinusToken, '-', 0, 0);
     }
 
     if (this.current() === '/') {
       // TODO: add columns and rows support
       this.next();
-      return new Token(TokenType.SLASH, '/', 0, 0);
+      return new Token(TokenType.SlashToken, '/', 0, 0);
     }
 
     if (this.current() === '*') {
       // TODO: add columns and rows support
       this.next();
-      return new Token(TokenType.STAR, '*', 0, 0);
+      return new Token(TokenType.StarToken, '*', 0, 0);
     }
 
     if (this.current() === '(') {
       // TODO: add columns and rows support
       this.next();
-      return new Token(TokenType.LPAR, '(', 0, 0);
+      return new Token(TokenType.OpenParenthesisToken, '(', 0, 0);
     }
 
     if (this.current() === ')') {
       // TODO: add columns and rows support
       this.next();
-      return new Token(TokenType.RPAR, ')', 0, 0);
+      return new Token(TokenType.CloseParenthesisToken, ')', 0, 0);
     }
 
-    return new Token(
-      TokenType.BAD_TOKEN,
-      this.program[this.position - 1],
-      0,
-      0
-    );
+    this.position++;
+    return new Token(TokenType.BadToken, this.program[this.position - 1], 0, 0);
   }
 }
