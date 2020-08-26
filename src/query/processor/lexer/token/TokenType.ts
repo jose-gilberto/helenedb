@@ -91,6 +91,10 @@ enum TokenType {
   WhitespaceToken = 'WhitespaceToken',
   BadToken = 'BadToken',
   // Comments
+
+  // Expressions
+  NumberExpression = 'NumberExpression',
+  BinaryExpression = 'BinaryExpression',
 }
 
 export default TokenType;

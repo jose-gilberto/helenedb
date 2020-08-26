@@ -2,22 +2,34 @@ import Token from '../lexer/token/Token';
 import Lexer from '../lexer/Lexer';
 import TokenType from '../lexer/token/TokenType';
 
-class AST {}
+abstract class SyntaxNode {
+  public abstract kind(): TokenType;
+}
 
-class BinaryOperation extends AST {
+abstract class ExpressionSyntax extends SyntaxNode {}
+
+class BinaryExpression extends ExpressionSyntax {
   public left: any;
   public operator: Token;
   public right: any;
 
-  constructor(left: any, operator: Token, right: any) {
+  constructor(
+    left: ExpressionSyntax,
+    operator: Token,
+    right: ExpressionSyntax
+  ) {
     super();
     this.left = left;
     this.operator = operator;
     this.right = right;
   }
+
+  public kind() {
+    return TokenType.BinaryExpression;
+  }
 }
 
-class NumberExpression extends AST {
+class NumberExpression extends ExpressionSyntax {
   public number: Token;
   public value: number | string;
 
@@ -25,6 +37,10 @@ class NumberExpression extends AST {
     super();
     this.number = number;
     this.value = number.getValue();
+  }
+
+  public kind(): TokenType {
+    return TokenType.NumberExpression;
   }
 }
 
@@ -48,13 +64,13 @@ export default class Parser {
 
   public factor() {
     const token = this.current;
-    if (token.getType() === TokenType.NUMBER_LITERAL) {
-      this.eat(TokenType.NUMBER_LITERAL);
+    if (token.getType() === TokenType.IntegerLiteral) {
+      this.eat(TokenType.IntegerLiteral);
       return new NumberExpression(token);
-    } else if (token.getType() === TokenType.LPAR) {
-      this.eat(TokenType.LPAR);
+    } else if (token.getType() === TokenType.OpenParenthesisToken) {
+      this.eat(TokenType.OpenParenthesisToken);
       const node = this.expr();
-      this.eat(TokenType.RPAR);
+      this.eat(TokenType.CloseParenthesisToken);
       return node;
     }
   }
@@ -62,16 +78,16 @@ export default class Parser {
   public term() {
     let node: any = this.factor();
     while (
-      this.current.getType() === TokenType.STAR ||
-      this.current.getType() === TokenType.SLASH
+      this.current.getType() === TokenType.StarToken ||
+      this.current.getType() === TokenType.SlashToken
     ) {
       const token = this.current;
-      if (token.getType() === TokenType.STAR) {
-        this.eat(TokenType.STAR);
-      } else if (token.getType() === TokenType.SLASH) {
-        this.eat(TokenType.SLASH);
+      if (token.getType() === TokenType.StarToken) {
+        this.eat(TokenType.StarToken);
+      } else if (token.getType() === TokenType.SlashToken) {
+        this.eat(TokenType.SlashToken);
       }
-      node = new BinaryOperation(node, token, this.factor());
+      node = new BinaryExpression(node, token, this.factor());
     }
     return node;
   }
@@ -79,16 +95,16 @@ export default class Parser {
   public expr() {
     let node = this.term();
     while (
-      this.current.getType() === TokenType.PLUS ||
-      this.current.getType() === TokenType.MINUS
+      this.current.getType() === TokenType.PlusToken ||
+      this.current.getType() === TokenType.MinusToken
     ) {
       const token = this.current;
-      if (token.getType() === TokenType.PLUS) {
-        this.eat(TokenType.PLUS);
-      } else if (token.getType() === TokenType.MINUS) {
-        this.eat(TokenType.MINUS);
+      if (token.getType() === TokenType.PlusToken) {
+        this.eat(TokenType.PlusToken);
+      } else if (token.getType() === TokenType.MinusToken) {
+        this.eat(TokenType.MinusToken);
       }
-      node = new BinaryOperation(node, token, this.term());
+      node = new BinaryExpression(node, token, this.term());
     }
     return node;
   }
