@@ -1,42 +1,20 @@
 // This is a test file, do not leave them to production
 
-import Lexer from './query/processor/lexer/Lexer';
-import SymbolTable from './query/processor/symbol-table/SymbolTable';
-import TokenType from './query/processor/lexer/token/TokenType';
 import Parser from './query/processor/parser/Parser';
-import QueryAlgebra from './query/processor/parser/algebra/QueryAlgebra';
-import Optimizer from './query/optimizer/Optmizer';
+import Lexer from './query/processor/lexer/Lexer';
 
-// const program = `
-// SELECT employee.lname
-// FROM employee, works_on, project
-// WHERE employee.pname = 'Aquarius' AND project.pnumber = works_on.pno AND employee.ssn = works_on.ssn AND project.pdate > '2020-10-03';
-// `;
+// import Lexer from './query/processor/lexer/Lexer';
+// import TokenType from './query/processor/lexer/token/TokenType';
 
-const program = `
-SELECT table.id FROM table WHERE table.id = 1;
-`;
+const program = `1+2+(3)+3`;
+// const lexer = new Lexer(program);
 
-// const program = `
-// SELECT product.name
-// FROM product, category
-// WHERE product.id_category = category.id AND product.value > 50.00;
-// `;
+// while (true) {
+//   let token = lexer.nextToken();
+//   if (token.getType() === TokenType.EofToken)
+//     break;
+//   console.log(`<${token.getType()}, ${token.getValue()}>`)
+// }
 
-// const sb = new SymbolTable();
-
-const lexer = new Lexer();
-const tokens = lexer.start(program);
-
-console.log(tokens);
-
-// const parser = new Parser(tokens, sb);
-
-// const tree = parser.getTree();
-
-// Optimizer.optmizeQuery(tree, sb)
-// tree.postOrder(tree.getRoot())
-// console.log(sb);
-
-// const qAlgebra = parser.getData();
-// qAlgebra.optimizeTree();
+const parser = new Parser(program);
+console.log();

@@ -1,92 +1,100 @@
 enum TokenType {
-  // Identifiers
-  IDENTIFIER = 'IDENTIFIER',
-
+  /**
+   * Tokens Specification
+   * TokenEnum = TokenString // token regex
+   */
+  // - Identifier
+  IdentifierToken = 'IdentifierToken', // [A-Za-z_][A-Za-z0-9_]*
+  // - DataTypes
+  IntegerToken = 'Integer', // int
+  DateToken = 'Date', // date
+  FloatToken = 'Float', // float
+  TextToken = 'Text', // text
+  BoolToken = 'Bool', // bool
   // Constant Literals
-  NUMBER_LITERAL = 'NUMBER_LITERAL',
-  TEXT_LITERAL = 'TEXT_LITERAL',
-  DATE_LITERAL = 'DATE_LITERAL',
-  BOOL_LITERAL = 'BOOL_LITERAL',
-
-  // DataTypes
-  INTEGER = 'INTEGER',
-  DATE = 'DATE',
-  FLOAT = 'FLOAT',
-  TEXT = 'TEXT',
-  BOOL = 'BOOL',
-
+  IntegerLiteral = 'NumberLiteral', // [0-9]*
+  FloatLiteral = 'FloatLiteral', // ([0-9]*[.])?[0-9]+([eE][-+]?\d+)?
+  TextLiteral = 'TextLiteral', // '(?:\.|(\\\')|[^\''\n])*'
+  DateLiteral = 'DateLiteral', // TODO: add suport for datetime
+  BoolLiteral = 'BoolLiteral', // true or false
   // Separators
-  LPAR = '(',
-  RPAR = ')',
-  LBRC = '[',
-  RBRC = ']',
-  // LKEY = '{',
-  // RKEY = '}',
-
+  OpenParenthesisToken = 'OpenParenthesisToken', // (
+  CloseParenthesisToken = 'CloseParenthesisToken', // )
+  OpenBracketToken = '[', // [
+  CloseBracketToken = ']', // ]
+  // OpenBraceToken = '{', // {
+  // CloseBraceToken = '}', // }
   // Operators
-  PLUS = '+',
-  MINUS = '-',
-  DIV = '/',
-  MULT = '*',
-
+  PlusToken = 'PlusToken', // +
+  MinusToken = 'MinusToken', // -
+  SlashToken = 'SlashToken', // /
+  StarToken = 'StarToken', // *
   // Relational Operators
-  EQ = '=',
-  LEQ = '<=',
-  LESS = '<',
-  GEQ = '>=',
-  GRT = '>',
-  DIFF = '!=',
-
+  EqualsToken = '=', // =
+  LessToken = '<', // <
+  LessOrEqualsToken = '<=', // <=
+  GreaterToken = '>', // >
+  GreaterOrEqualsToken = '>=', // >=
+  BangEqualsToken = '!=', // !=
   // Symbols
-  SEMICOLON = ';',
-  DOT = '.',
-  COMMA = ',',
-
+  SemicolonToken = ';', // ;
+  DotToken = '.', // .
+  ColonToken = ':', // :
+  CommaToken = ',', // ,
   // Keywords
-  ADD = 'ADD',
-  ALL = 'ALL',
-  ALTER = 'ALTER',
-  AND = 'AND',
-  AS = 'AS',
-  ASC = 'ASC',
-  AUTHORIZATION = 'AUTHORIZATION',
-  BETWEEN = 'BETWEEN',
-  BY = 'BY',
-  COLUMN = 'COLUMN',
-  CONSTRAINT = ' CONSTRAINT',
-  CREATE = 'CREATE',
-  DELETE = 'DELETE',
-  DESC = 'DESC',
-  DISTINCT = 'DISTINC',
-  DROP = 'DROP',
-  EXISTS = 'EXISTS',
-  EXPLAIN = 'EXPLAIN',
-  FOREIGN = 'FOREIGN',
-  FROM = 'FROM',
-  GROUP = 'GROUP',
-  HAVING = 'HAVING',
-  IN = 'IN',
-  INCLUDE = 'INCLUDE',
-  INDEX = 'INDEX',
-  INSERT = 'INSERT',
-  INTO = 'INTO',
-  KEY = 'KEY',
-  LIKE = 'LIKE',
-  LIMIT = 'LIMIT',
-  NOT = 'NOT',
-  NULL = 'NULL',
-  ON = 'ON',
-  OR = 'OR',
-  ORDER = 'ORDER',
-  PRIMARY = 'PRIMARY',
-  SELECT = 'SELECT',
-  SET = 'SET',
-  TABLE = ' TABLE',
-  UPDATE = 'UPDATE',
-  SCHEMA = 'SCHEMA',
-  VALUES = 'VALUES',
-  VIEW = 'VIEW',
-  WHERE = 'WHERE',
+  AddKeyword = 'ADD',
+  AllKeyword = 'ALL',
+  AlterKeyword = 'ALTER',
+  AndKeyword = 'AND',
+  AsKeyword = 'AS',
+  AscKeyword = 'ASC',
+  AuthorizationKeyword = 'AUTHORIZATION',
+  BetweenKeyword = 'BETWEEN',
+  ByKeyword = 'BY',
+  ColumnKeyword = 'COLUMN',
+  ConstraintKeyword = 'CONSTRAINT',
+  CreateKeyword = 'CREATE',
+  DeleteKeyword = 'DELETE',
+  DescKeyword = 'DESC',
+  DistinctKeyword = 'DISTINCT',
+  DropKeyword = 'DROP',
+  ExistsKeyword = 'EXISTS',
+  ExplainKeyword = 'EXPLAIN',
+  ForeignKeyword = 'FOREIGN',
+  FromKeyword = 'FROM',
+  GroupKeyword = 'GROUP',
+  HavingKeyword = 'HAVING',
+  InKeyword = 'IN',
+  IncludeKeyword = 'INCLUDE',
+  IndexKeyword = 'INDEX',
+  InsertKeyword = 'INSERT',
+  IntoKeyword = 'INTO',
+  KeyKeyword = 'KEY',
+  LikeKeyword = 'LIKE',
+  LimitKeyword = 'LIMIT',
+  NotKeyword = 'NOT',
+  NullKeyword = 'NULL',
+  OnKeyword = 'ON',
+  OrKeyword = 'OR',
+  OrderKeyword = 'ORDER',
+  PrimaryKeyword = 'PRIMARY',
+  SelectKeyword = 'SELECT',
+  SetKeyword = 'SET',
+  TableKeyword = ' TABLE',
+  UpdateKeyword = 'UPDATE',
+  SschemaKeyword = 'SCHEMA',
+  ValuesKeyword = 'VALUES',
+  ViewKeyword = 'VIEW',
+  WhereKeyword = 'WHERE',
+  // Scape Characters
+  EofToken = '/0',
+  WhitespaceToken = 'WhitespaceToken',
+  BadToken = 'BadToken',
+  // Comments
+
+  // Expressions
+  NumberExpression = 'NumberExpression',
+  BinaryExpression = 'BinaryExpression',
 }
 
 export default TokenType;
