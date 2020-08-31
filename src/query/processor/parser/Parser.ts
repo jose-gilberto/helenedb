@@ -1,82 +1,58 @@
 import Token from '../lexer/token/Token';
 import Lexer from '../lexer/Lexer';
 import TokenType from '../lexer/token/TokenType';
-
-abstract class SyntaxNode {
-  public abstract kind(): TokenType;
-}
-
-abstract class ExpressionSyntax extends SyntaxNode {}
-
-class BinaryExpression extends ExpressionSyntax {
-  public left: any;
-  public operator: Token;
-  public right: any;
-
-  constructor(
-    left: ExpressionSyntax,
-    operator: Token,
-    right: ExpressionSyntax
-  ) {
-    super();
-    this.left = left;
-    this.operator = operator;
-    this.right = right;
-  }
-
-  public kind() {
-    return TokenType.BinaryExpression;
-  }
-}
-
-class NumberExpression extends ExpressionSyntax {
-  public number: Token;
-  public value: number | string;
-
-  constructor(number: Token) {
-    super();
-    this.number = number;
-    this.value = number.getValue();
-  }
-
-  public kind(): TokenType {
-    return TokenType.NumberExpression;
-  }
-}
+import IntegerExpressionSyntax from './ast/primary/IntegerExpressionSyntax';
+import BinaryExpressionSyntax from './ast/operations/BinaryExpressionSyntax';
+import ExpressionSyntax from './ast/ExpressionSyntax';
 
 export default class Parser {
   private lexer: Lexer;
   private current: Token;
+  private ast: ExpressionSyntax | undefined;
 
   constructor(program: string) {
     this.lexer = new Lexer(program);
     this.current = this.lexer.nextToken();
   }
 
-  private error() {
+  // private parsePrimaryNameOrCallExpression(): ExpressionSyntax {
+  //   if (this.current.getType() === TokenType.OpenParenthesisToken) {
+  //     this.eat(TokenType.OpenParenthesisToken)
+  //     const node = this.expr()
+  //     this.eat(TokenType.CloseParenthesisToken)
+  //     return node
+  //   }
+  //   throw new Error();
+  // }
+
+  private error(): void {
     throw new Error();
   }
 
-  public eat(type: TokenType) {
+  public eat(type: TokenType): void {
     if (this.current.getType() === type) this.current = this.lexer.nextToken();
-    else this.error();
+    else this.error;
   }
 
-  public factor() {
+  public parsePrimaryExpression(): ExpressionSyntax {
     const token = this.current;
-    if (token.getType() === TokenType.IntegerLiteral) {
-      this.eat(TokenType.IntegerLiteral);
-      return new NumberExpression(token);
-    } else if (token.getType() === TokenType.OpenParenthesisToken) {
-      this.eat(TokenType.OpenParenthesisToken);
-      const node = this.expr();
-      this.eat(TokenType.CloseParenthesisToken);
-      return node;
+    switch (token.getType()) {
+      case TokenType.IntegerLiteral:
+        this.eat(TokenType.IntegerLiteral);
+        return new IntegerExpressionSyntax(token);
+      case TokenType.OpenParenthesisToken: {
+        this.eat(TokenType.OpenParenthesisToken);
+        const node = this.expr();
+        this.eat(TokenType.CloseParenthesisToken);
+        return node;
+      }
+      default:
+        throw new Error();
     }
   }
 
-  public term() {
-    let node: any = this.factor();
+  public term(): ExpressionSyntax {
+    let node: any = this.parsePrimaryExpression();
     while (
       this.current.getType() === TokenType.StarToken ||
       this.current.getType() === TokenType.SlashToken
@@ -87,12 +63,16 @@ export default class Parser {
       } else if (token.getType() === TokenType.SlashToken) {
         this.eat(TokenType.SlashToken);
       }
-      node = new BinaryExpression(node, token, this.factor());
+      node = new BinaryExpressionSyntax(
+        node,
+        token,
+        this.parsePrimaryExpression()
+      );
     }
     return node;
   }
 
-  public expr() {
+  public expr(): ExpressionSyntax {
     let node = this.term();
     while (
       this.current.getType() === TokenType.PlusToken ||
@@ -104,12 +84,17 @@ export default class Parser {
       } else if (token.getType() === TokenType.MinusToken) {
         this.eat(TokenType.MinusToken);
       }
-      node = new BinaryExpression(node, token, this.term());
+      node = new BinaryExpressionSyntax(node, token, this.term());
     }
     return node;
   }
 
   public parse() {
-    return this.expr();
+    this.ast = this.expr();
+    return this.ast;
+  }
+
+  public visit(node: ExpressionSyntax): any {
+    return this.ast?.visit();
   }
 }
