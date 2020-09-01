@@ -25,33 +25,42 @@ export default class Parser {
   //   throw new Error();
   // }
 
-  private error(): void {
-    throw new Error();
+  public match(type: TokenType): void {
+    if (this.current.getType() === type) this.current = this.lexer.nextToken();
+    else
+      throw new SyntaxError(
+        `Expect a ${type} token, receive a ${this.current.getType()} token.`
+      );
   }
 
-  public eat(type: TokenType): void {
-    if (this.current.getType() === type) this.current = this.lexer.nextToken();
-    else this.error;
+  public parseParenthesizedExpression(): ExpressionSyntax {
+    this.match(TokenType.OpenParenthesisToken);
+    const node = this.parseBinaryExpression();
+    this.match(TokenType.CloseParenthesisToken);
+    return node;
+  }
+
+  public parseIntegerLiteral(): ExpressionSyntax {
+    const token = this.current;
+    this.match(TokenType.IntegerLiteral);
+    return new IntegerExpressionSyntax(token);
   }
 
   public parsePrimaryExpression(): ExpressionSyntax {
-    const token = this.current;
-    switch (token.getType()) {
+    switch (this.current.getType()) {
       case TokenType.IntegerLiteral:
-        this.eat(TokenType.IntegerLiteral);
-        return new IntegerExpressionSyntax(token);
+        return this.parseIntegerLiteral();
       case TokenType.OpenParenthesisToken: {
-        this.eat(TokenType.OpenParenthesisToken);
-        const node = this.expr();
-        this.eat(TokenType.CloseParenthesisToken);
-        return node;
+        return this.parseParenthesizedExpression();
       }
       default:
-        throw new Error();
+        throw new SyntaxError(
+          `Unsuported Syntax: Expect a Primary Expression receive a ${this.current.getType()}`
+        );
     }
   }
 
-  public term(): ExpressionSyntax {
+  public parsePrioritizedBinaryExpression(): ExpressionSyntax {
     let node: any = this.parsePrimaryExpression();
     while (
       this.current.getType() === TokenType.StarToken ||
@@ -59,9 +68,9 @@ export default class Parser {
     ) {
       const token = this.current;
       if (token.getType() === TokenType.StarToken) {
-        this.eat(TokenType.StarToken);
+        this.match(TokenType.StarToken);
       } else if (token.getType() === TokenType.SlashToken) {
-        this.eat(TokenType.SlashToken);
+        this.match(TokenType.SlashToken);
       }
       node = new BinaryExpressionSyntax(
         node,
@@ -72,25 +81,29 @@ export default class Parser {
     return node;
   }
 
-  public expr(): ExpressionSyntax {
-    let node = this.term();
+  public parseBinaryExpression(): ExpressionSyntax {
+    let node = this.parsePrioritizedBinaryExpression();
     while (
       this.current.getType() === TokenType.PlusToken ||
       this.current.getType() === TokenType.MinusToken
     ) {
       const token = this.current;
       if (token.getType() === TokenType.PlusToken) {
-        this.eat(TokenType.PlusToken);
+        this.match(TokenType.PlusToken);
       } else if (token.getType() === TokenType.MinusToken) {
-        this.eat(TokenType.MinusToken);
+        this.match(TokenType.MinusToken);
       }
-      node = new BinaryExpressionSyntax(node, token, this.term());
+      node = new BinaryExpressionSyntax(
+        node,
+        token,
+        this.parsePrioritizedBinaryExpression()
+      );
     }
     return node;
   }
 
   public parse() {
-    this.ast = this.expr();
+    this.ast = this.parseBinaryExpression();
     return this.ast;
   }
 
