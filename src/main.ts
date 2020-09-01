@@ -2,7 +2,7 @@
 
 import Parser from './query/processor/parser/Parser';
 
-const program = `1+2*(3+2)`;
+const program = `5---2`;
 
 const parser = new Parser(program);
 const ast = parser.parse();

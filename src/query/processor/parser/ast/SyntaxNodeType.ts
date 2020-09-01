@@ -1,5 +1,6 @@
 enum NodeType {
   BinaryExpressionSyntax,
+  UnaryExpressionSyntax,
   IntegerExpressionSyntax,
 }
 

@@ -4,6 +4,7 @@ import TokenType from '../lexer/token/TokenType';
 import IntegerExpressionSyntax from './ast/primary/IntegerExpressionSyntax';
 import BinaryExpressionSyntax from './ast/operations/BinaryExpressionSyntax';
 import ExpressionSyntax from './ast/ExpressionSyntax';
+import UnaryExpressionSyntax from './ast/operations/UnaryExpressionSyntax';
 
 export default class Parser {
   private lexer: Lexer;
@@ -52,6 +53,16 @@ export default class Parser {
         return this.parseIntegerLiteral();
       case TokenType.OpenParenthesisToken: {
         return this.parseParenthesizedExpression();
+      }
+      case TokenType.PlusToken: {
+        const token = this.current;
+        this.match(TokenType.PlusToken);
+        return new UnaryExpressionSyntax(token, this.parsePrimaryExpression());
+      }
+      case TokenType.MinusToken: {
+        const token = this.current;
+        this.match(TokenType.MinusToken);
+        return new UnaryExpressionSyntax(token, this.parsePrimaryExpression());
       }
       default:
         throw new SyntaxError(
