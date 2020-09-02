@@ -5,6 +5,11 @@ export default class Lexer {
   private program: string;
   private position: number;
 
+  private reservedKeywords: { [key: string]: Token } = {
+    SELECT: new Token(TokenType.SelectKeyword, 'SELECT', 0, 0),
+    FROM: new Token(TokenType.FromKeyword, 'FROM', 0, 0),
+  };
+
   // Flow Control Variables
   // Line pointer
   //private lineCounter: number;
@@ -29,9 +34,32 @@ export default class Lexer {
     this.position++;
   }
 
+  private peek(offset: number) {
+    const pos = this.position + offset;
+    if (pos > this.program.length - 1) return '/0';
+    else return this.program[pos];
+  }
+
+  private identifier(): Token {
+    let result = '';
+    while (this.current() != '\0' && this.current().match(/[a-zA-Z]/)) {
+      result += this.current();
+      this.position++;
+    }
+    const token: Token =
+      this.reservedKeywords[result] === undefined
+        ? new Token(TokenType.IdentifierToken, result, 0, 0)
+        : this.reservedKeywords[result];
+    return token;
+  }
+
   public nextToken(): Token {
     if (this.position >= this.program.length) {
       return new Token(TokenType.EofToken, '\0', 0, 0);
+    }
+
+    if (this.current().match(/[a-zA-Z]/)) {
+      return this.identifier();
     }
 
     if (this.current().match(/[0-9]/)) {
