@@ -42,20 +42,31 @@ export default class Lexer {
 
   private identifier(): Token {
     let result = '';
-    while (this.current() != '\0' && this.current().match(/[a-zA-Z]/)) {
+
+    while (this.current() !== '\0' && this.current().match(/[a-zA-Z]/)) {
       result += this.current();
       this.position++;
     }
+
     const token: Token =
       this.reservedKeywords[result] === undefined
         ? new Token(TokenType.IdentifierToken, result, 0, 0)
         : this.reservedKeywords[result];
+
     return token;
+  }
+
+  private skipWhitespace(): void {
+    while (this.current() !== '\0' && this.current() === ' ') this.position++;
   }
 
   public nextToken(): Token {
     if (this.position >= this.program.length) {
       return new Token(TokenType.EofToken, '\0', 0, 0);
+    }
+
+    if (this.current() === ' ') {
+      this.skipWhitespace();
     }
 
     if (this.current().match(/[a-zA-Z]/)) {
@@ -74,17 +85,17 @@ export default class Lexer {
       return new Token(TokenType.IntegerLiteral, value, 0, 0);
     }
 
-    if (this.current().match(/\s/)) {
-      const start = this.position;
+    // if (this.current().match(/\s/)) {
+    //   const start = this.position;
 
-      while (this.current().match(/\s/)) this.next();
+    //   while (this.current().match(/\s/)) this.next();
 
-      const length = this.position - start;
-      const lexem = this.program.substring(start, start + length);
+    //   const length = this.position - start;
+    //   const lexem = this.program.substring(start, start + length);
 
-      // TODO: add columns and rows support
-      return new Token(TokenType.WhitespaceToken, lexem, 0, 0);
-    }
+    //   // TODO: add columns and rows support
+    //   return new Token(TokenType.WhitespaceToken, lexem, 0, 0);
+    // }
 
     if (this.current() === '+') {
       // TODO: add columns and rows support
@@ -120,6 +131,21 @@ export default class Lexer {
       // TODO: add columns and rows support
       this.next();
       return new Token(TokenType.CloseParenthesisToken, ')', 0, 0);
+    }
+
+    if (this.current() === '.') {
+      this.next();
+      return new Token(TokenType.DotToken, '.', 0, 0);
+    }
+
+    if (this.current() === ',') {
+      this.next();
+      return new Token(TokenType.CommaToken, ',', 0, 0);
+    }
+
+    if (this.current() === ';') {
+      this.next();
+      return new Token(TokenType.SemicolonToken, ';', 0, 0);
     }
 
     this.position++;

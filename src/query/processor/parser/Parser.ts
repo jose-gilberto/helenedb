@@ -5,6 +5,13 @@ import IntegerExpressionSyntax from './ast/primary/IntegerExpressionSyntax';
 import BinaryExpressionSyntax from './ast/operations/BinaryExpressionSyntax';
 import ExpressionSyntax from './ast/ExpressionSyntax';
 import UnaryExpressionSyntax from './ast/operations/UnaryExpressionSyntax';
+import NoOperationExpressionSyntax from './ast/operations/NoOperationExpressionSyntax';
+import CompoundExpressionSyntax from './ast/statements/CompoundExpressionSyntax';
+import SelectExpressionSyntax from './ast/statements/SelectExpressionSyntax';
+import IdentifierExpressionSyntax from './ast/primary/IdentifierExpressionSyntax';
+import ColumnExpressionSyntax from './ast/structures/ColumnExpressionSyntax';
+import TableExpressionSyntax from './ast/structures/TableExpressionSyntax';
+import ProjectionExpressionSyntax from './ast/operations/ProjectionExpressionSyntax';
 
 export default class Parser {
   private lexer: Lexer;
@@ -30,7 +37,7 @@ export default class Parser {
     if (this.current.getType() === type) this.current = this.lexer.nextToken();
     else
       throw new SyntaxError(
-        `Expect a ${type} token, receive a ${this.current.getType()} token.`
+        `Expect a ${type} token, receive a ${this.current.getType()} - ${this.current.getValue()}.`
       );
   }
 
@@ -113,8 +120,138 @@ export default class Parser {
     return node;
   }
 
+  private parseNoOperationExpression(): ExpressionSyntax {
+    return new NoOperationExpressionSyntax();
+  }
+
+  private parseIdentifier(): ExpressionSyntax {
+    /*
+      <identifier> -> ID
+    */
+    const node = new IdentifierExpressionSyntax(this.current);
+    this.match(TokenType.IdentifierToken);
+    return node;
+  }
+
+  private parseColumnRef(): ExpressionSyntax {
+    /**
+     * <column-ref> -> <identifier> . <identifier>
+     */
+    const table = this.parseIdentifier();
+    this.match(TokenType.DotToken);
+    const column = this.parseIdentifier();
+
+    return new ColumnExpressionSyntax(column, table);
+  }
+
+  private parseColumnList(): ExpressionSyntax[] {
+    /**
+     * <column-list> -> <column-ref> , <column-list> | <column-ref>
+     */
+    const node = this.parseColumnRef();
+    const result = [node];
+
+    while (this.current.getType() === TokenType.CommaToken) {
+      this.match(TokenType.CommaToken);
+      result.push(this.parseColumnRef());
+    }
+
+    return result;
+  }
+
+  private parseTableList(): ExpressionSyntax {
+    /**
+     * <table-list> -> <table-ref> , <table-list> | <table-ref>
+     */
+    const node = this.parseTableRef();
+    // while (this.current.getType() === TokenType.CommaToken) {
+    //   this.match(TokenType.CommaToken);
+    // }
+    return node;
+  }
+
+  private parseTableRef(): ExpressionSyntax {
+    /**
+     * <table-ref> -> <identifier>
+     */
+    const table = this.parseIdentifier();
+    return new TableExpressionSyntax(table);
+  }
+
+  private parseProjection(): ExpressionSyntax {
+    /**
+     * <projection-operation> -> <column-list> FROM <table-list>
+     */
+    const columns = this.parseColumnList();
+    this.match(TokenType.FromKeyword);
+    const tables = this.parseTableList();
+
+    return new ProjectionExpressionSyntax(columns, tables);
+  }
+
+  private parseSelectStatement(): ExpressionSyntax {
+    /**
+     * <select-statement> -> SELECT <projection-operation>
+     */
+    this.match(TokenType.SelectKeyword);
+    const node = this.parseProjection();
+
+    return new SelectExpressionSyntax(node);
+  }
+
+  private parseStatement(): ExpressionSyntax {
+    /**
+     * <statement> -> <select-statement> | empty
+     */
+    let node: ExpressionSyntax;
+    if (this.current.getType() === TokenType.SelectKeyword) {
+      node = this.parseSelectStatement();
+    } else {
+      node = this.parseNoOperationExpression();
+    }
+    return node;
+  }
+
+  private parseStatementList(): ExpressionSyntax[] {
+    /**
+     * <statement-list> -> <statement> ; <statement-list> | <statement> ;
+     */
+    const node = this.parseStatement();
+    this.match(TokenType.SemicolonToken);
+    const results = [node];
+
+    while (this.current.getType() !== TokenType.EofToken) {
+      results.push(this.parseStatement());
+      this.match(TokenType.SemicolonToken);
+    }
+
+    return results;
+  }
+
+  private parseCompoundStatement(): ExpressionSyntax {
+    /**
+     * <compound-statement> -> <statement-list>
+     */
+    const nodes = this.parseStatementList();
+
+    const root = new CompoundExpressionSyntax();
+    root.children = nodes;
+
+    return root;
+  }
+
+  private parseProgram(): ExpressionSyntax {
+    /**
+     * <program> -> <compound-statement> EOF
+     */
+    const node = this.parseCompoundStatement();
+    this.match(TokenType.EofToken); // TODO: verify if this is necessary
+    return node;
+  }
+
   public parse() {
-    this.ast = this.parseBinaryExpression();
+    this.ast = this.parseProgram();
+    // this.ast = this.parseBinaryExpression();
     return this.ast;
   }
 

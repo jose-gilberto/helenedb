@@ -1,20 +1,19 @@
 import ExpressionSyntax from '../ExpressionSyntax';
 import NodeType from '../SyntaxNodeType';
 
-export default class TableExpressionSyntax extends ExpressionSyntax {
+export default class ColumnExpressionSyntax extends ExpressionSyntax {
   public table: ExpressionSyntax;
-  public operation?: ExpressionSyntax;
+  public column: ExpressionSyntax;
 
-  constructor(table: ExpressionSyntax, operation?: ExpressionSyntax) {
+  constructor(column: ExpressionSyntax, table: ExpressionSyntax) {
     super();
+    this.column = column;
     this.table = table;
-    this.operation = operation;
   }
 
   public kind(): NodeType {
-    return NodeType.TableExpression;
+    return NodeType.ColumnExpression;
   }
-
   public visit() {
     throw new Error('Method not implemented.');
   }

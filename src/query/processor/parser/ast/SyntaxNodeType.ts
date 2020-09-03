@@ -7,6 +7,7 @@ enum NodeType {
   NoOperationExpression,
   TableExpression,
   IdentifierExpression,
+  ColumnExpression,
 }
 
 export default NodeType;
