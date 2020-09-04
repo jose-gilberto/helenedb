@@ -15,7 +15,7 @@ export default class IdentifierExpressionSyntax extends ExpressionSyntax {
   public kind(): NodeType {
     return NodeType.IdentifierExpression;
   }
-  public visit() {
-    throw new Error('Method not implemented.');
+  public visit(): string {
+    return this.value.toString();
   }
 }

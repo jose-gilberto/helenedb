@@ -15,6 +15,6 @@ export default class ColumnExpressionSyntax extends ExpressionSyntax {
     return NodeType.ColumnExpression;
   }
   public visit() {
-    throw new Error('Method not implemented.');
+    return [this.table.visit(), this.column.visit()];
   }
 }

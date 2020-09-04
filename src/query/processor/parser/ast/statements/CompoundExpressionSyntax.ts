@@ -22,6 +22,10 @@ export default class CompoundExpressionSyntax extends ExpressionSyntax {
   }
 
   public visit() {
-    throw new Error('Method not implemented.');
+    const results: any[] = [];
+    this.children.forEach((op) => {
+      results.push(op.visit());
+    });
+    return results[results.length - 1];
   }
 }

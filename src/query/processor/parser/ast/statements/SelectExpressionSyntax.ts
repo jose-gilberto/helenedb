@@ -14,6 +14,6 @@ export default class SelectExpressionSyntax extends ExpressionSyntax {
   }
 
   public visit() {
-    throw new Error('Method not implemented.');
+    return this.operation.visit();
   }
 }

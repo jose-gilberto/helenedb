@@ -15,6 +15,25 @@ export default class ProjectionExpressionSyntax extends ExpressionSyntax {
     throw new Error('Method not implemented.');
   }
   public visit() {
-    throw new Error('Method not implemented.');
+    if (this.operation.kind() === NodeType.TableExpression) {
+      const table = this.operation.visit();
+      const columns = [];
+      const result: { [key: string]: any[] } = {};
+
+      this.fields.forEach((c) => {
+        const arr = c.visit();
+        if (arr[0] !== table['tableName']) {
+          throw Error();
+        } else {
+          if (table[arr[1]] === undefined) {
+            throw Error();
+          } else {
+            result[arr[1]] = table[arr[1]];
+          }
+        }
+      });
+
+      return result;
+    }
   }
 }
