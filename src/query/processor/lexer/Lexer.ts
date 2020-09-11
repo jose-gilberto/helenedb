@@ -5,6 +5,11 @@ export default class Lexer {
   private program: string;
   private position: number;
 
+  private reservedKeywords: { [key: string]: Token } = {
+    SELECT: new Token(TokenType.SelectKeyword, 'SELECT', 0, 0),
+    FROM: new Token(TokenType.FromKeyword, 'FROM', 0, 0),
+  };
+
   // Flow Control Variables
   // Line pointer
   //private lineCounter: number;
@@ -29,9 +34,43 @@ export default class Lexer {
     this.position++;
   }
 
+  private peek(offset: number) {
+    const pos = this.position + offset;
+    if (pos > this.program.length - 1) return '/0';
+    else return this.program[pos];
+  }
+
+  private identifier(): Token {
+    let result = '';
+
+    while (this.current() !== '\0' && this.current().match(/[a-zA-Z]/)) {
+      result += this.current();
+      this.position++;
+    }
+
+    const token: Token =
+      this.reservedKeywords[result] === undefined
+        ? new Token(TokenType.IdentifierToken, result, 0, 0)
+        : this.reservedKeywords[result];
+
+    return token;
+  }
+
+  private skipWhitespace(): void {
+    while (this.current() !== '\0' && this.current() === ' ') this.position++;
+  }
+
   public nextToken(): Token {
     if (this.position >= this.program.length) {
       return new Token(TokenType.EofToken, '\0', 0, 0);
+    }
+
+    if (this.current() === ' ') {
+      this.skipWhitespace();
+    }
+
+    if (this.current().match(/[a-zA-Z]/)) {
+      return this.identifier();
     }
 
     if (this.current().match(/[0-9]/)) {
@@ -46,17 +85,17 @@ export default class Lexer {
       return new Token(TokenType.IntegerLiteral, value, 0, 0);
     }
 
-    if (this.current().match(/\s/)) {
-      const start = this.position;
+    // if (this.current().match(/\s/)) {
+    //   const start = this.position;
 
-      while (this.current().match(/\s/)) this.next();
+    //   while (this.current().match(/\s/)) this.next();
 
-      const length = this.position - start;
-      const lexem = this.program.substring(start, start + length);
+    //   const length = this.position - start;
+    //   const lexem = this.program.substring(start, start + length);
 
-      // TODO: add columns and rows support
-      return new Token(TokenType.WhitespaceToken, lexem, 0, 0);
-    }
+    //   // TODO: add columns and rows support
+    //   return new Token(TokenType.WhitespaceToken, lexem, 0, 0);
+    // }
 
     if (this.current() === '+') {
       // TODO: add columns and rows support
@@ -92,6 +131,21 @@ export default class Lexer {
       // TODO: add columns and rows support
       this.next();
       return new Token(TokenType.CloseParenthesisToken, ')', 0, 0);
+    }
+
+    if (this.current() === '.') {
+      this.next();
+      return new Token(TokenType.DotToken, '.', 0, 0);
+    }
+
+    if (this.current() === ',') {
+      this.next();
+      return new Token(TokenType.CommaToken, ',', 0, 0);
+    }
+
+    if (this.current() === ';') {
+      this.next();
+      return new Token(TokenType.SemicolonToken, ';', 0, 0);
     }
 
     this.position++;

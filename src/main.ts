@@ -2,19 +2,13 @@
 
 import Parser from './query/processor/parser/Parser';
 import Lexer from './query/processor/lexer/Lexer';
+import TokenType from './query/processor/lexer/token/TokenType';
 
-// import Lexer from './query/processor/lexer/Lexer';
-// import TokenType from './query/processor/lexer/token/TokenType';
-
-const program = `1+2+(3)+3`;
-// const lexer = new Lexer(program);
-
-// while (true) {
-//   let token = lexer.nextToken();
-//   if (token.getType() === TokenType.EofToken)
-//     break;
-//   console.log(`<${token.getType()}, ${token.getValue()}>`)
-// }
+const program = `SELECT tablea.name, tablea.id FROM tablea;`;
 
 const parser = new Parser(program);
-console.log();
+const ast = parser.parse();
+
+// console.log(JSON.stringify(ast));
+
+console.table(parser.visit(ast));
