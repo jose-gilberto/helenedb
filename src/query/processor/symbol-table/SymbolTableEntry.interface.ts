@@ -5,9 +5,10 @@ enum ScopeType {
 }
 
 export default interface SymbolTableEntry {
+  name: string;
   scope: {
     type: ScopeType;
-    parent: string;
+    parent: number;
   };
   type: string;
 }
