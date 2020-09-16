@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import DatabaseGenerator from '../utils/DatabaseGenerator';
 
 export default class FileManager {
   // TODO: implements logger
@@ -21,6 +22,7 @@ export default class FileManager {
       console.log('Already exists');
     } else {
       fs.mkdirSync(path.resolve(process.cwd(), '.dbfiles/'));
+      DatabaseGenerator.generateFiles();
     }
   }
 }
