@@ -6,15 +6,13 @@ export default class Lexer {
   private position: number;
 
   private reservedKeywords: { [key: string]: Token } = {
-    SELECT: new Token(TokenType.SelectKeyword, 'SELECT', 0, 0),
-    FROM: new Token(TokenType.FromKeyword, 'FROM', 0, 0),
+    SELECT: new Token(TokenType.SelectKeyword, 'SELECT'),
+    FROM: new Token(TokenType.FromKeyword, 'FROM'),
+    CREATE: new Token(TokenType.CreateKeyword, 'CREATE'),
+    TABLE: new Token(TokenType.TableKeyword, 'TABLE'),
+    VARCHAR: new Token(TokenType.TextToken, 'VARCHAR'),
+    INTEGER: new Token(TokenType.IntegerToken, 'INTEGER'),
   };
-
-  // Flow Control Variables
-  // Line pointer
-  //private lineCounter: number;
-  // Column pointer
-  //private colCounter: number;
 
   constructor(program: string) {
     this.program = program;
@@ -50,23 +48,24 @@ export default class Lexer {
 
     const token: Token =
       this.reservedKeywords[result] === undefined
-        ? new Token(TokenType.IdentifierToken, result, 0, 0)
+        ? new Token(TokenType.IdentifierToken, result)
         : this.reservedKeywords[result];
 
     return token;
   }
 
   private skipWhitespace(): void {
-    while (this.current() !== '\0' && this.current() === ' ') this.position++;
+    while (this.current() !== '\0' && this.current().match(/[\b\n\t ]/))
+      this.position++;
   }
 
   public nextToken(): Token {
-    if (this.position >= this.program.length) {
-      return new Token(TokenType.EofToken, '\0', 0, 0);
+    if (this.current().match(/[\b\n\t ]/)) {
+      this.skipWhitespace();
     }
 
-    if (this.current() === ' ') {
-      this.skipWhitespace();
+    if (this.position >= this.program.length) {
+      return new Token(TokenType.EofToken, '\0');
     }
 
     if (this.current().match(/[a-zA-Z]/)) {
@@ -75,80 +74,39 @@ export default class Lexer {
 
     if (this.current().match(/[0-9]/)) {
       const start = this.position;
-
       while (this.current().match(/[0-9]/)) this.next();
-
       const length = this.position - start;
       const lexem = this.program.substring(start, start + length);
       const value = parseInt(lexem);
-      // TODO: add columns and rows support
-      return new Token(TokenType.IntegerLiteral, value, 0, 0);
-    }
-
-    // if (this.current().match(/\s/)) {
-    //   const start = this.position;
-
-    //   while (this.current().match(/\s/)) this.next();
-
-    //   const length = this.position - start;
-    //   const lexem = this.program.substring(start, start + length);
-
-    //   // TODO: add columns and rows support
-    //   return new Token(TokenType.WhitespaceToken, lexem, 0, 0);
-    // }
-
-    if (this.current() === '+') {
-      // TODO: add columns and rows support
-      this.next();
-      return new Token(TokenType.PlusToken, '+', 0, 0);
-    }
-
-    if (this.current() === '-') {
-      // TODO: add columns and rows support
-      this.next();
-      return new Token(TokenType.MinusToken, '-', 0, 0);
-    }
-
-    if (this.current() === '/') {
-      // TODO: add columns and rows support
-      this.next();
-      return new Token(TokenType.SlashToken, '/', 0, 0);
+      return new Token(TokenType.IntegerLiteral, value);
     }
 
     if (this.current() === '*') {
-      // TODO: add columns and rows support
       this.next();
-      return new Token(TokenType.StarToken, '*', 0, 0);
+      return new Token(TokenType.StarToken, '*');
     }
 
     if (this.current() === '(') {
-      // TODO: add columns and rows support
       this.next();
-      return new Token(TokenType.OpenParenthesisToken, '(', 0, 0);
+      return new Token(TokenType.OpenParenthesisToken, '(');
     }
 
     if (this.current() === ')') {
-      // TODO: add columns and rows support
       this.next();
-      return new Token(TokenType.CloseParenthesisToken, ')', 0, 0);
-    }
-
-    if (this.current() === '.') {
-      this.next();
-      return new Token(TokenType.DotToken, '.', 0, 0);
-    }
-
-    if (this.current() === ',') {
-      this.next();
-      return new Token(TokenType.CommaToken, ',', 0, 0);
+      return new Token(TokenType.CloseParenthesisToken, ')');
     }
 
     if (this.current() === ';') {
       this.next();
-      return new Token(TokenType.SemicolonToken, ';', 0, 0);
+      return new Token(TokenType.SemicolonToken, ';');
+    }
+
+    if (this.current() === ',') {
+      this.next();
+      return new Token(TokenType.CommaToken, ',');
     }
 
     this.position++;
-    return new Token(TokenType.BadToken, this.program[this.position - 1], 0, 0);
+    return new Token(TokenType.BadToken, this.program[this.position - 1]);
   }
 }

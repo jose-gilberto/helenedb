@@ -87,7 +87,7 @@ enum TokenType {
   ViewKeyword = 'VIEW',
   WhereKeyword = 'WHERE',
   // Scape Characters
-  EofToken = '/0',
+  EofToken = '\0',
   WhitespaceToken = 'WhitespaceToken',
   BadToken = 'BadToken',
   // Comments
