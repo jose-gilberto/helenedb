@@ -2,8 +2,11 @@ import Lexer from '../lexer/Lexer';
 import Token from '../lexer/token/Token';
 import TokenType from '../lexer/token/TokenType';
 import ExpressionSyntax from './ast/ExpressionSyntax';
+import CreateColumnExpressionSyntax from './ast/operations/CreateColumnExpressionSyntax';
+import CreateTableExpressionSyntax from './ast/operations/CreateTableExpressionSyntax';
 import IdentifierExpressionSyntax from './ast/primary/IdentifierExpressionSyntax';
 import SelectExpressionSyntax from './ast/statements/SelectExpressionSyntax';
+import DataTypeExpressionSyntax from './ast/structures/DataTypeExpressionSyntax';
 
 export default class Parser {
   private ast: ExpressionSyntax | undefined;
@@ -39,6 +42,61 @@ export default class Parser {
     return node;
   }
 
+  private parseCreateColumnStatement(): ExpressionSyntax[] {
+    // column TYPE
+    // type -> INTEGER | VARCHAR([NUM])
+    const columns: ExpressionSyntax[] = [];
+
+    let column = this.parseIdentifier();
+    let type = this.current.getValue(); // INTEGER | VARCHAR
+    let size: number;
+
+    if (this.current.getType() === TokenType.TextToken) {
+      this.match(TokenType.TextToken);
+      this.match(TokenType.OpenParenthesisToken);
+      size = ~~this.current.getValue();
+      this.match(TokenType.IntegerLiteral);
+      this.match(TokenType.CloseParenthesisToken);
+    } else if (this.current.getType() === TokenType.IntegerToken) {
+      this.match(TokenType.IntegerToken);
+      size = 4; // 4 Bytes
+    } else throw new Error('Unsuported Data Type');
+    columns.push(
+      new CreateColumnExpressionSyntax(
+        column,
+        new DataTypeExpressionSyntax(type.toString(), size)
+      )
+    );
+
+    // Continue
+    while (TokenType.CommaToken === this.current.getType()) {
+      this.match(TokenType.CommaToken);
+
+      column = this.parseIdentifier();
+      type = this.current.getValue(); // INTEGER | VARCHAR
+
+      if (this.current.getType() === TokenType.TextToken) {
+        this.match(TokenType.TextToken);
+        this.match(TokenType.OpenParenthesisToken);
+        size = ~~this.current.getValue();
+        this.match(TokenType.IntegerLiteral);
+        this.match(TokenType.CloseParenthesisToken);
+      } else if (this.current.getType() === TokenType.IntegerToken) {
+        this.match(TokenType.IntegerToken);
+        size = 4; // 4 Bytes
+      } else throw new Error('Unsuported Data Type');
+
+      columns.push(
+        new CreateColumnExpressionSyntax(
+          column,
+          new DataTypeExpressionSyntax(type.toString(), size)
+        )
+      );
+    }
+
+    return columns;
+  }
+
   private parseCreateStatement() {
     // CREATE TABLE <identifier> ( [ column TYPE ]* );
     this.match(TokenType.CreateKeyword);
@@ -47,13 +105,20 @@ export default class Parser {
     const identifier = this.parseIdentifier();
 
     this.match(TokenType.OpenParenthesisToken);
+
+    const columns = this.parseCreateColumnStatement();
+
+    this.match(TokenType.CloseParenthesisToken);
+    this.match(TokenType.SemicolonToken);
+
+    return new CreateTableExpressionSyntax(identifier, columns);
   }
 
   private parseStatement(): ExpressionSyntax {
     if (this.current.getType() === TokenType.SelectKeyword) {
       return this.parseSelectStatement();
     } else if (this.current.getType() === TokenType.CreateKeyword) {
-      // TODO: Create Statement
+      return this.parseCreateStatement();
     }
     throw new Error('Invalid Command!');
   }

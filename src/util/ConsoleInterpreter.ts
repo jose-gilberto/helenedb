@@ -1,5 +1,6 @@
 import * as readline from 'readline';
 import Lexer from '../query/processor/lexer/Lexer';
+import Parser from '../query/processor/parser/Parser';
 
 enum MetaCommand {
   EXIT,
@@ -32,9 +33,8 @@ export default class ConsoleInterpreter {
             break;
         }
       } else {
-        const lexer = new Lexer();
-        const tokens = lexer.start(line);
-        console.log(tokens);
+        const p = new Parser(line);
+        console.log(p.visit());
       }
       rl.prompt();
     }).on('close', function () {

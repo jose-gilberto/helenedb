@@ -8,6 +8,9 @@ enum NodeType {
   TableExpression,
   IdentifierExpression,
   ColumnExpression,
+  CreateColumnExpressionSyntax,
+  DataTypeExpressionSyntax,
+  CreateTableExpressionSyntax,
 }
 
 export default NodeType;
