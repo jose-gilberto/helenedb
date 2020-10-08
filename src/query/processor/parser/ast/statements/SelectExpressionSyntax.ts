@@ -2,11 +2,11 @@ import ExpressionSyntax from '../ExpressionSyntax';
 import NodeType from '../SyntaxNodeType';
 
 export default class SelectExpressionSyntax extends ExpressionSyntax {
-  public operation: ExpressionSyntax;
+  public table: ExpressionSyntax;
 
-  constructor(operation: ExpressionSyntax) {
+  constructor(table: ExpressionSyntax) {
     super();
-    this.operation = operation;
+    this.table = table;
   }
 
   public kind(): NodeType {
@@ -14,6 +14,6 @@ export default class SelectExpressionSyntax extends ExpressionSyntax {
   }
 
   public visit() {
-    return this.operation.visit();
+    return this.table.visit();
   }
 }
