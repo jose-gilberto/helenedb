@@ -34,6 +34,7 @@ export default class ConsoleInterpreter {
         }
       } else {
         const p = new Parser(line);
+        p.parse();
         console.log(p.visit());
       }
       rl.prompt();
