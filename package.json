@@ -7,6 +7,7 @@
     "test": "jest",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "npm run lint -- --fix",
+    "console": "ts-node src/console.ts",
     "develop": "ts-node ./src/main.ts"
   },
   "repository": {
