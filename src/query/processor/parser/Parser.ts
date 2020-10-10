@@ -4,7 +4,10 @@ import TokenType from '../lexer/token/TokenType';
 import ExpressionSyntax from './ast/ExpressionSyntax';
 import CreateColumnExpressionSyntax from './ast/operations/CreateColumnExpressionSyntax';
 import CreateTableExpressionSyntax from './ast/operations/CreateTableExpressionSyntax';
+import InsertExpressionSyntax from './ast/operations/InsertExpressionSyntax';
 import IdentifierExpressionSyntax from './ast/primary/IdentifierExpressionSyntax';
+import IntegerExpressionSyntax from './ast/primary/IntegerExpressionSyntax';
+import TextExpressionSyntax from './ast/primary/TextExpressionSyntax';
 import SelectExpressionSyntax from './ast/statements/SelectExpressionSyntax';
 import DataTypeExpressionSyntax from './ast/structures/DataTypeExpressionSyntax';
 
@@ -114,11 +117,56 @@ export default class Parser {
     return new CreateTableExpressionSyntax(identifier, columns);
   }
 
+  private parseInsertStatement(): ExpressionSyntax {
+    this.match(TokenType.InsertKeyword);
+    this.match(TokenType.IntoKeyword);
+
+    const table = this.parseIdentifier();
+
+    this.match(TokenType.ValuesKeyword);
+
+    // Read columns
+    const values: ExpressionSyntax[] = [];
+
+    this.match(TokenType.OpenParenthesisToken);
+
+    if (this.current.getType() === TokenType.IntegerLiteral) {
+      values.push(new IntegerExpressionSyntax(this.current));
+      this.match(TokenType.IntegerLiteral);
+    } else if (this.current.getType() === TokenType.TextLiteral) {
+      values.push(new TextExpressionSyntax(this.current));
+      this.match(TokenType.TextLiteral);
+    } else {
+      throw new Error(`Unsuported Literal: ${this.current.getType()}`);
+    }
+
+    while (this.current.getType() === TokenType.CommaToken) {
+      this.match(TokenType.CommaToken);
+
+      if (this.current.getType() === TokenType.IntegerLiteral) {
+        values.push(new IntegerExpressionSyntax(this.current));
+        this.match(TokenType.IntegerLiteral);
+      } else if (this.current.getType() === TokenType.TextLiteral) {
+        values.push(new TextExpressionSyntax(this.current));
+        this.match(TokenType.TextLiteral);
+      } else {
+        throw new Error('Unsuported Literal');
+      }
+    }
+
+    this.match(TokenType.CloseParenthesisToken);
+    this.match(TokenType.SemicolonToken);
+
+    return new InsertExpressionSyntax(table, values);
+  }
+
   private parseStatement(): ExpressionSyntax {
     if (this.current.getType() === TokenType.SelectKeyword) {
       return this.parseSelectStatement();
     } else if (this.current.getType() === TokenType.CreateKeyword) {
       return this.parseCreateStatement();
+    } else if (this.current.getType() === TokenType.InsertKeyword) {
+      return this.parseInsertStatement();
     }
     throw new Error('Invalid Command!');
   }

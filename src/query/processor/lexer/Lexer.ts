@@ -12,6 +12,9 @@ export default class Lexer {
     TABLE: new Token(TokenType.TableKeyword, 'TABLE'),
     VARCHAR: new Token(TokenType.TextToken, 'VARCHAR'),
     INTEGER: new Token(TokenType.IntegerToken, 'INTEGER'),
+    INSERT: new Token(TokenType.InsertKeyword, 'INSERT'),
+    INTO: new Token(TokenType.IntoKeyword, 'INTO'),
+    VALUES: new Token(TokenType.ValuesKeyword, 'VALUES'),
   };
 
   constructor(program: string) {
@@ -79,6 +82,17 @@ export default class Lexer {
       const lexem = this.program.substring(start, start + length);
       const value = parseInt(lexem);
       return new Token(TokenType.IntegerLiteral, value);
+    }
+
+    if (this.current() === "'") {
+      this.next();
+      let lexem = '';
+      while (this.current() !== "'") {
+        lexem += this.current();
+        this.next();
+      }
+      this.next();
+      return new Token(TokenType.TextLiteral, lexem);
     }
 
     if (this.current() === '*') {

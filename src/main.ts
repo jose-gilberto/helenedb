@@ -5,10 +5,7 @@ import TokenType from './query/processor/lexer/token/TokenType';
 import Parser from './query/processor/parser/Parser';
 
 const program = `
-  CREATE TABLE users (
-    id INTEGER,
-    name VARCHAR(64)
-  );
+  INSERT INTO tasks VALUES (2);
 `;
 
 const fm = new FileManager();

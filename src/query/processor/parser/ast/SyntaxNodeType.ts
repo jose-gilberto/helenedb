@@ -11,6 +11,8 @@ enum NodeType {
   CreateColumnExpressionSyntax,
   DataTypeExpressionSyntax,
   CreateTableExpressionSyntax,
+  TextExpressionSyntax,
+  InsertExpressionSyntax,
 }
 
 export default NodeType;
