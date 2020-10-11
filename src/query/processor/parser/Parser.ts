@@ -4,6 +4,7 @@ import TokenType from '../lexer/token/TokenType';
 import ExpressionSyntax from './ast/ExpressionSyntax';
 import CreateColumnExpressionSyntax from './ast/operations/CreateColumnExpressionSyntax';
 import CreateTableExpressionSyntax from './ast/operations/CreateTableExpressionSyntax';
+import DropTableExpressionSyntax from './ast/operations/DropTableExpressionSyntax';
 import InsertExpressionSyntax from './ast/operations/InsertExpressionSyntax';
 import IdentifierExpressionSyntax from './ast/primary/IdentifierExpressionSyntax';
 import IntegerExpressionSyntax from './ast/primary/IntegerExpressionSyntax';
@@ -160,6 +161,17 @@ export default class Parser {
     return new InsertExpressionSyntax(table, values);
   }
 
+  private parseDropTableStatement(): ExpressionSyntax {
+    this.match(TokenType.DropKeyword);
+    this.match(TokenType.TableKeyword);
+
+    const identifier = this.parseIdentifier();
+
+    this.match(TokenType.SemicolonToken);
+
+    return new DropTableExpressionSyntax(identifier);
+  }
+
   private parseStatement(): ExpressionSyntax {
     if (this.current.getType() === TokenType.SelectKeyword) {
       return this.parseSelectStatement();
@@ -167,7 +179,10 @@ export default class Parser {
       return this.parseCreateStatement();
     } else if (this.current.getType() === TokenType.InsertKeyword) {
       return this.parseInsertStatement();
+    } else if (this.current.getType() === TokenType.DropKeyword) {
+      return this.parseDropTableStatement();
     }
+
     throw new Error('Invalid Command!');
   }
 

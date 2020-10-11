@@ -15,6 +15,7 @@ export default class Lexer {
     INSERT: new Token(TokenType.InsertKeyword, 'INSERT'),
     INTO: new Token(TokenType.IntoKeyword, 'INTO'),
     VALUES: new Token(TokenType.ValuesKeyword, 'VALUES'),
+    DROP: new Token(TokenType.DropKeyword, 'DROP'),
   };
 
   constructor(program: string) {

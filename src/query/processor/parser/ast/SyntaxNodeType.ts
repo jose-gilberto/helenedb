@@ -13,6 +13,7 @@ enum NodeType {
   CreateTableExpressionSyntax,
   TextExpressionSyntax,
   InsertExpressionSyntax,
+  DropTableExpressionSyntax,
 }
 
 export default NodeType;
