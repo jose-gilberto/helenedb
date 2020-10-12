@@ -6,11 +6,15 @@ import CreateColumnExpressionSyntax from './ast/operations/CreateColumnExpressio
 import CreateTableExpressionSyntax from './ast/operations/CreateTableExpressionSyntax';
 import DropTableExpressionSyntax from './ast/operations/DropTableExpressionSyntax';
 import InsertExpressionSyntax from './ast/operations/InsertExpressionSyntax';
+import ProjectionExpressionSyntax from './ast/operations/ProjectionExpressionSyntax';
 import IdentifierExpressionSyntax from './ast/primary/IdentifierExpressionSyntax';
 import IntegerExpressionSyntax from './ast/primary/IntegerExpressionSyntax';
+import StarExpressionSyntax from './ast/primary/StarExpressionSyntax';
 import TextExpressionSyntax from './ast/primary/TextExpressionSyntax';
 import SelectExpressionSyntax from './ast/statements/SelectExpressionSyntax';
+import ColumnExpressionSyntax from './ast/structures/ColumnExpressionSyntax';
 import DataTypeExpressionSyntax from './ast/structures/DataTypeExpressionSyntax';
+import TableExpressionSyntax from './ast/structures/TableExpressionSyntax';
 
 export default class Parser {
   private ast: ExpressionSyntax | undefined;
@@ -36,14 +40,54 @@ export default class Parser {
   private parseSelectStatement(): ExpressionSyntax {
     // SELECT * FROM <identifier> ;
     this.match(TokenType.SelectKeyword);
-    this.match(TokenType.StarToken);
+
+    // Projection
+    const columns = this.parseColumnList();
+
     this.match(TokenType.FromKeyword);
 
     const table = this.parseIdentifier();
-    const node = new SelectExpressionSyntax(table);
+    const tableExpression = new TableExpressionSyntax(table);
+
+    /*
+    projection
+        |
+      table
+    */
+    const projection = new ProjectionExpressionSyntax(columns, tableExpression);
+    const node = new SelectExpressionSyntax(projection);
 
     this.match(TokenType.SemicolonToken);
     return node;
+  }
+
+  private parseColumnExpression(): ExpressionSyntax {
+    const table = this.parseIdentifier();
+    this.match(TokenType.DotToken);
+    const column = this.parseIdentifier();
+    // table.column
+    return new ColumnExpressionSyntax(column, table);
+  }
+
+  private parseColumnList(): ExpressionSyntax[] {
+    const columns: ExpressionSyntax[] = [];
+
+    if (this.current.getType() === TokenType.StarToken) {
+      columns.push(new StarExpressionSyntax(this.current));
+      this.match(TokenType.StarToken);
+    } else {
+      let col = this.parseColumnExpression();
+      columns.push(col);
+
+      while (TokenType.CommaToken === this.current.getType()) {
+        this.match(TokenType.CommaToken);
+
+        col = this.parseColumnExpression();
+        columns.push(col);
+      }
+    }
+
+    return columns;
   }
 
   private parseCreateColumnStatement(): ExpressionSyntax[] {
@@ -56,6 +100,7 @@ export default class Parser {
     let size: number;
 
     if (this.current.getType() === TokenType.TextToken) {
+      // VARCHAR(SIZE)
       this.match(TokenType.TextToken);
       this.match(TokenType.OpenParenthesisToken);
       size = ~~this.current.getValue();

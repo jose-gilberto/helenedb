@@ -1,13 +1,8 @@
 import ExpressionSyntax from '../ExpressionSyntax';
 import NodeType from '../SyntaxNodeType';
-
-const tables: { [keY: string]: Record<string, any> } = {
-  tablea: {
-    tableName: 'tablea',
-    id: [1, 2, 3, 4],
-    name: ['john', 'bob', 'brédi', 'meri meri'],
-  },
-};
+import fs from 'fs';
+import path from 'path';
+import FileManager from '../../../../../data/file/FileManager';
 
 export default class TableExpressionSyntax extends ExpressionSyntax {
   public table: ExpressionSyntax;
@@ -24,7 +19,11 @@ export default class TableExpressionSyntax extends ExpressionSyntax {
   }
 
   public visit() {
-    const tableName = this.table.visit();
-    return tables[tableName];
+    const table = this.table.visit();
+    const data = fs
+      .readFileSync(path.resolve(FileManager.FILES_DIR, `${table}.json`))
+      .toString();
+
+    return JSON.parse(data);
   }
 }

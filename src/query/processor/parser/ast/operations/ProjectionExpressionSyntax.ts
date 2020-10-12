@@ -12,28 +12,34 @@ export default class ProjectionExpressionSyntax extends ExpressionSyntax {
   }
 
   public kind(): NodeType {
-    throw new Error('Method not implemented.');
+    return NodeType.ProjectionExpression;
   }
+
   public visit() {
     if (this.operation.kind() === NodeType.TableExpression) {
-      const table = this.operation.visit();
-      const columns = [];
-      const result: { [key: string]: any[] } = {};
+      const columns = this.fields.map((m) => m.visit());
 
-      this.fields.forEach((c) => {
-        const arr = c.visit();
-        if (arr[0] !== table['tableName']) {
-          throw Error();
-        } else {
-          if (table[arr[1]] === undefined) {
-            throw Error();
-          } else {
-            result[arr[1]] = table[arr[1]];
-          }
-        }
+      const table = this.operation.visit();
+      const result: { [key: string]: any }[] = [];
+
+      if (columns.length === 1 && columns[0] === '*') {
+        return table.tuples;
+      }
+
+      // TODO: checar semantica das colunas
+
+      table.tuples.forEach((tuple) => {
+        const t: { [key: string]: any } = {};
+
+        columns.forEach(([table, column]) => {
+          t[column] = tuple[column];
+        });
+
+        result.push(t);
       });
 
       return result;
     }
+    throw new Error('Unsuported operation');
   }
 }
