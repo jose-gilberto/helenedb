@@ -121,6 +121,11 @@ export default class Lexer {
       return new Token(TokenType.CommaToken, ',');
     }
 
+    if (this.current() === '.') {
+      this.next();
+      return new Token(TokenType.DotToken, '.');
+    }
+
     this.position++;
     return new Token(TokenType.BadToken, this.program[this.position - 1]);
   }

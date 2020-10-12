@@ -14,6 +14,8 @@ enum NodeType {
   TextExpressionSyntax,
   InsertExpressionSyntax,
   DropTableExpressionSyntax,
+  StarExpression,
+  ProjectionExpression,
 }
 
 export default NodeType;
