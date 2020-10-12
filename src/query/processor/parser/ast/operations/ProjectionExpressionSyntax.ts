@@ -20,13 +20,23 @@ export default class ProjectionExpressionSyntax extends ExpressionSyntax {
       const columns = this.fields.map((m) => m.visit());
 
       const table = this.operation.visit();
+      const tableColumns = table.metadata.columns.map((c) => c.column);
+
       const result: { [key: string]: any }[] = [];
 
       if (columns.length === 1 && columns[0] === '*') {
         return table.tuples;
       }
 
-      // TODO: checar semantica das colunas
+      console.log(tableColumns);
+
+      columns.forEach((col) => {
+        // col = [table][column]
+        // col[1] = column that will be projected
+        if (!tableColumns.includes(col[1])) {
+          throw new Error(`Column not exist in table: ${table.metadata.name}`);
+        }
+      });
 
       table.tuples.forEach((tuple) => {
         const t: { [key: string]: any } = {};
