@@ -15,17 +15,18 @@ export default class ProjectionExpressionSyntax extends ExpressionSyntax {
     return NodeType.ProjectionExpression;
   }
 
-  public visit() {
+  public visit(): any {
     if (this.operation.kind() === NodeType.TableExpression) {
       const columns = this.fields.map((m) => m.visit());
 
       const table = this.operation.visit();
       const tableColumns = table.metadata.columns.map((c) => c.column);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result: { [key: string]: any }[] = [];
 
       if (columns.length === 1 && columns[0] === '*') {
-        return table.tuples;
+        return table;
       }
 
       console.log(tableColumns);
@@ -37,18 +38,23 @@ export default class ProjectionExpressionSyntax extends ExpressionSyntax {
           throw new Error(`Column not exist in table: ${table.metadata.name}`);
         }
       });
-
+      // TODO: maybe change for a map funtion
       table.tuples.forEach((tuple) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const t: { [key: string]: any } = {};
 
-        columns.forEach(([table, column]) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        columns.forEach(([_, column]) => {
           t[column] = tuple[column];
         });
 
         result.push(t);
       });
 
-      return result;
+      //TODO: Update the metadata avaliable
+      table.tuples = result;
+
+      return table;
     }
     throw new Error('Unsuported operation');
   }

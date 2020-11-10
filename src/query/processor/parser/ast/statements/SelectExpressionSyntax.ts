@@ -13,8 +13,9 @@ export default class SelectExpressionSyntax extends ExpressionSyntax {
     return NodeType.SelectExpressionSyntax;
   }
 
-  public visit() {
-    const tuples = this.operation.visit();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public visit(): any {
+    const { tuples } = this.operation.visit();
     console.table(tuples);
     return `Select executed with success. Exit code: 0. Rows: ${tuples.length}`;
   }
